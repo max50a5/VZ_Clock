@@ -37,7 +37,7 @@ Ticker blinker;
 ESP8266HTTPUpdateServer httpUpdater;
 WiFiClient ESPclient;
 PubSubClient MQTTclient(ESPclient);
-ESP8266WebServer server(80);
+ESP8266WebServer server(80);                                                            // Веб сервер
 File fsUploadFile;
 IPAddress apIP(192, 168, 4, 1);
 #include "P_js.h"
@@ -78,10 +78,10 @@ int    location_vis;
 int    location_uv;
 String location_weather_description = "";
 // ----------змінні для роботи з mqtt сервером
-char mqtt_server[21] = "m13.cloudmqtt.com";
-int  mqtt_port = 13011;
+char mqtt_server[31] = "m13.cloudmqtt.com";                                             // Имя сервера MQTT
+int  mqtt_port = 13011;                                                                 // Порт для подключения к серверу MQTT
 char mqtt_user[25] = "mqtt_user";
-char mqtt_pass[25] = "mqtt_pass";
+char mqtt_pass[25] = "mqtt_pass";                                               // Пароль от сервера MQTT
 char mqtt_name[25] = "ESP-Informer";
 char mqtt_sub_inform[25] = "Inform/mess";
 char mqtt_sub1[50] = "Ulica/temp";
@@ -157,11 +157,11 @@ String jsonTime = "{}";
 float timeZone = 7.0;                                                                       //  часовий пояс
 float hourCorr;
 bool isDayLightSaving = false;
-int displayData = 2;                      // 0 - Не отображать, 1 - отображать статику, 2 - отображать в бегущей строке
+int displayData = 1;                      // 0 - Не отображать, 1 - отображать статику, 2 - отображать в бегущей строке
 long localEpoc = 0;
 long localMillisAtUpdate = 0;
-int hour=2,   minute=40,  second=42,  month=4,   day=6,   dayOfWeek=6,   year=2018;
-int g_hour, g_minute, g_second, g_month=1, g_day, g_dayOfWeek, g_year;
+int hour = 2,   minute = 40,  second = 42,  month = 4,   day = 6,   dayOfWeek = 6,   year = 2018;
+int g_hour, g_minute, g_second, g_month = 1, g_day, g_dayOfWeek, g_year;
 bool statusUpdateNtpTime = 0;                                                               // якщо не "0" - то останнє оновленя часу було вдалим
 String y, mon, wd, d, h, m, s, mes;
 uint8_t hourTest[3], minuteTest[3];
@@ -174,7 +174,6 @@ bool bigCklock = 0;
 bool bigCklocDay = 0;
 // ----------
 String cityName;
-//int cityID0;
 String weatherString;
 String weatherStringZ;
 // ----------
@@ -185,11 +184,11 @@ int dx = 0;
 int dy = 0;
 byte del = 0;
 int updateOTA = 1;
-bool displayForecast = true;
-bool displayCityName = false;
-bool displayForecastNow = true;
-bool displayForecastToday = true;
-bool displayForecastTomorrow = true;
+bool displayForecast = true;           // вообще (не) отображать погоду
+bool displayCityName = false;           // отображать название города
+bool displayForecastNow = true;        // отображать прогноз на сейчас
+bool displayForecastToday = true;      // отображать прогноз на сегодня
+bool displayForecastTomorrow = true;   // отображать прогноз на завтра
 int updateForecast = 0;
 int updateForecasttomorrow = 0;
 float t0 = -85.0; // температура в доме со знаком и плавающей запятой
@@ -249,14 +248,14 @@ byte sensorHome = 0;         //NONE = 0, DS18B20 = 1, Si7021 = 2, BMP280 = 3, BM
 byte sensorHumi = 0;         //NONE = 0, NONE    = 1, Si7021 = 2, NONE   = 3, BME280 = 4,  NONE = 6;
 byte sensorPrAl = 0;         //NONE = 0, NONE    = 1, NONE   = 2, BMP280 = 3, BME280 = 4, NONE = 5, NONE = 6;
 String tNow, tCurr, tPress, tPress0, tSpeed, tMin, tTom, tYour, tPoint, tIp, tPass, tWeatrNot, tWeatrTN;
-bool alarm_stat=0;
-bool alarm_hold=0;
-byte alarm_numer=255;
-byte alarme[5][3]{{12, 30, 0},{7, 15, 0},{22, 55, 0},{0, 30, 0},{0, 0, 0}}; //1-часы, 2-минуты, 3-откл(0)/1раз(11)/пон-пят(8)/пон-сб(9)/сб-вс(10)/вс(1)/пон(2)/вто(3)/сре(4)/чет(5)/пят(6)/сб(7)/всегда(12)
-byte memory_hour_start=9;
-byte memory_hour_end=23;
-byte m_date=0;
-byte memory_date[9][2]{{1, 1},{2, 1},{6, 1},{7, 1},{13, 1},{19, 1},{8, 3},{1, 5},{1, 9}}; //1-день, 2-месяц
+bool alarm_stat = 0;
+bool alarm_hold = 0;
+byte alarm_numer = 255;
+byte alarme[5][3] {{12, 30, 0}, {7, 15, 0}, {22, 55, 0}, {0, 30, 0}, {0, 0, 0}}; //1-часы, 2-минуты, 3-откл(0)/1раз(11)/пон-пят(8)/пон-сб(9)/сб-вс(10)/вс(1)/пон(2)/вто(3)/сре(4)/чет(5)/пят(6)/сб(7)/всегда(12)
+byte memory_hour_start = 9;
+byte memory_hour_end = 23;
+byte m_date = 0;
+byte memory_date[9][2] {{1, 1}, {2, 1}, {6, 1}, {7, 1}, {13, 1}, {19, 1}, {8, 3}, {1, 5}, {1, 9}}; //1-день, 2-месяц
 char memory_date_mes0[51] = "Новый Год!";
 char memory_date_mes1[51] = "Новый Год кончился (";
 char memory_date_mes2[51] = "Ночь перед Рождеством";
@@ -266,9 +265,9 @@ char memory_date_mes5[51] = "Крещение";
 char memory_date_mes6[51] = "Женский день";
 char memory_date_mes7[51] = "Мир! Труд! Май!";
 char memory_date_mes8[51] = "День Победы!";
-bool firstStart=0;
-bool apStart=0;
-byte amountNotStarts=0;
+bool firstStart = 0;
+bool apStart = 0;
+byte amountNotStarts = 0;
 String jsonLine = "";
 bool rtcStat = true;
 int rtcAddr = 0x68;
@@ -284,10 +283,10 @@ bool runningLine = 0;
 String tJanuary, tFebruary, tMarch, tApril, tMay, tJune, tJuly, tAugust, tSeptember, tOctober, tNovember, tDecember;
 String tMonday, tTuesday, tWednesday, tThursday, tFriday, tSaturday, tSunday, tYear;
 //======================================================================================
-void setup(){
+void setup() {
   Wire.begin(); 
   Serial.begin(115200);
-  if(printCom) Serial.println("");
+  if (printCom) Serial.println("");
   pinMode(BUT_PIN, INPUT);
   digitalWrite(BUT_PIN, !butStat);
   delay(500);
@@ -300,42 +299,42 @@ void setup(){
   lang();
   Wire.beginTransmission(0x67);
   errorRTC = Wire.endTransmission();
-  if(errorRTC==0){
+  if (errorRTC == 0) {
     rtcAddr = 0x67;
-    if(printCom) Serial.println("YES!!! find RTC module addr: 0x67!");
+    if (printCom) Serial.println("YES!!! find RTC module addr: 0x67!");
   } else {
     Wire.beginTransmission(0x68);
     errorRTC = Wire.endTransmission();
-    if(errorRTC==0){
+    if (errorRTC == 0) {
       rtcAddr = 0x68;
-      if(printCom) Serial.println("YES!!! find RTC module addr: 0x68!");
+      if (printCom) Serial.println("YES!!! find RTC module addr: 0x68!");
     } else rtcStat = false;
   }
-  if(rtcStat){
-    if(printCom) Serial.println("RTC START");
+  if (rtcStat) {
+    if (printCom) Serial.println("RTC START");
     getRTCDateTime();
-    hour=hour_rtc;
-    minute=minute_rtc;
-    second=second_rtc;
-    day=day_rtc;
-    month=month_rtc;
-    year=year_rtc;
-    dayOfWeek=dayOfWeek_rtc;
-    if(printCom){
-      Serial.println("RTC update: "+String(hour)+":"+String(minute)+":"+String(second)+"    "+String(day)+"."+String(month)+"."+String(year)+" D="+String(dayOfWeek));
+    hour = hour_rtc;
+    minute = minute_rtc;
+    second = second_rtc;
+    day = day_rtc;
+    month = month_rtc;
+    year = year_rtc;
+    dayOfWeek = dayOfWeek_rtc;
+    if (printCom) {
+      Serial.println("RTC update: " + String(hour) + ":" + String(minute) + ":" + String(second) + "    " + String(day) + "." + String(month) + "." + String(year) + " D=" + String(dayOfWeek));
     }
-  } else if(printCom) Serial.println("RTC module off!");
+  } else if (printCom) Serial.println("RTC module off!");
   // ------------------
-  if(bmp.begin()) {
-    if(printCom) Serial.println("YES!!! find BMP280 sensor!");
+  if (bmp.begin()) {
+    if (printCom) Serial.println("YES!!! find BMP280 sensor!");
     bmp280 = true;
     sensorsBmp();
-  } else if(printCom) Serial.println("Did not find BMP280 sensor!");
-  if(bmp180.begin()) {
-    if(printCom) Serial.println("YES!!! find BMP180 sensor!");
+  } else if (printCom) Serial.println("Did not find BMP280 sensor!");
+  if (bmp180.begin()) {
+    if (printCom) Serial.println("YES!!! find BMP180 sensor!");
     BMP180 = true;
     sensorsBmp();
-  } else if(printCom) Serial.println("Did not find BMP180 sensor!");
+  } else if (printCom) Serial.println("Did not find BMP180 sensor!");
   bme.parameter.communication = 0;                            //Подключение сенсора по I2C 
   bme.parameter.I2CAddress = 0x76;                            //I2C Адрес сенсора или 0x77
   bme.parameter.sensorMode = 0b11;                            //0b00 спящий режим измерения не выполняются, 0b01: выполняется одно измерение, 0b11: датчик постоянно измеряет
@@ -346,16 +345,16 @@ void setup(){
   bme.parameter.pressureSeaLevel = 1013.25;                   //текущее давление, скорректированное для уровня моря 1013.25 hPa. Для точных измерений высоты
   bme.parameter.tempOutsideCelsius = 15;                      //средняя температура снаружи 15°C
   bme.parameter.tempOutsideFahrenheit = 59;                   //средняя температура снаружи 59°F
-  if(bme.init() == 0x60) {
-    if(printCom) Serial.println("YES!!! find BME280 sensor!");
+  if (bme.init() == 0x60) {
+    if (printCom) Serial.println("YES!!! find BME280 sensor!");
     bme280 = true;
     sensorsBme();
-  } else if(printCom) Serial.println("Did not find BME280 sensor!");
+  } else if (printCom) Serial.println("Did not find BME280 sensor!");
   if (sensor.begin()) {
-    if(printCom) Serial.println("YES!!! find Si7021 sensor!");
+    if (printCom) Serial.println("YES!!! find Si7021 sensor!");
     si7021 = true;
     sensorsSi7021();
-  } else if(printCom) Serial.println("Did not find Si7021 sensor!");
+  } else if (printCom) Serial.println("Did not find Si7021 sensor!");
   sensorsAll();
   serverInit();
 // ----------
@@ -400,17 +399,17 @@ void setup(){
 }
 //==========================================
 void callback(char* topic, byte* payload, unsigned int length) { // получаем знаковое число с десятичной плавающей запятой
-  if(!mqttOn) return;
+  if (!mqttOn) return;
   String Text;
-  for(int i = 0; i < length; i++) Text += ((char)payload[i]);
-  if(String(topic) == mqtt_sub_inform) {
-    for(byte i = 0; i < NUM_MAX1; i++) {
+  for (int i = 0; i < length; i++) Text += ((char)payload[i]);
+  if (String(topic) == mqtt_sub_inform) {
+    for (byte i = 0; i < NUM_MAX1; i++) {
       Text += "   ";
     }
-    for(int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++) {
       bip();
     }
-    if(printCom) {
+    if (printCom) {
       printTime();
       Serial.println("MQTT Incoming Message: " + Text);
     }
@@ -419,34 +418,34 @@ void callback(char* topic, byte* payload, unsigned int length) { // получа
     printStringWithShift(Text.c_str(), 30, 1);
     return;
   }
-  if(String(topic) == mqtt_sub1) {
+  if (String(topic) == mqtt_sub1) {
     tMqtt1 = 0.0;
-    if(payload[0]==45) length = (length>=6?8:length);
-    else length = (length>=5?7:length);
+    if (payload[0] == 45) length = (length >= 6 ? 8 : length);
+    else length = (length >= 5 ? 7 : length);
     tMqtt1 = Text.substring(0, length).toFloat();
-    if(printCom) {
+    if (printCom) {
       printTime();
       Serial.println("MQTT1 Incoming: " + String(tMqtt1));
     }
     counterMqtt1 = millis();
     sensors();
   }
-  if(String(topic) == mqtt_sub2) {
-    tMqtt2 = Text.substring(0, length+1).toFloat();
-    if(tMqtt2 > 99999.99) tMqtt2 = 99999.99;
-    if(printCom) {
+  if (String(topic) == mqtt_sub2) {
+    tMqtt2 = Text.substring(0, length + 1).toFloat();
+    if (tMqtt2 > 99999.99) tMqtt2 = 99999.99;
+    if (printCom) {
       printTime();
       Serial.println("MQTT2 Incoming: " + String(tMqtt2));
     }
     counterMqtt2 = millis();
     sensors();
   }
-  if(String(topic) == mqtt_sub3) {
+  if (String(topic) == mqtt_sub3) {
     tMqtt3 = 0.0;
-    if(payload[0]==45) length = (length>=6?8:length);
-    else length = (length>=5?7:length);
+    if (payload[0] == 45) length = (length >= 6 ? 8 : length);
+    else length = (length >= 5 ? 7 : length);
     tMqtt3 = Text.substring(0, length).toFloat();
-    if(printCom) {
+    if (printCom) {
       printTime();
       Serial.println("MQTT3 Incoming: " + String(tMqtt3));
     }
@@ -456,23 +455,23 @@ void callback(char* topic, byte* payload, unsigned int length) { // получа
 }
 //======================================================================================
 void reconnect() {
-  if(printCom) {
+  if (printCom) {
     printTime();
     Serial.println("Start Reconnect void...");
   }
-  if(WiFi.status() == WL_CONNECTED) {  // && !ESPclient.connected()
-    if(printCom) {
+  if (WiFi.status() == WL_CONNECTED) {  // && !ESPclient.connected()
+    if (printCom) {
       printTime();
       Serial.print("MQTT reconnection...");
     }
-    if(MQTTclient.connect(mqtt_name, mqtt_user, mqtt_pass)) {
-      if(printCom) Serial.println("connected");
+    if (MQTTclient.connect(mqtt_name, mqtt_user, mqtt_pass)) {
+      if (printCom) Serial.println("connected");
       MQTTclient.subscribe(mqtt_sub_inform);
       MQTTclient.subscribe(mqtt_sub1);
       MQTTclient.subscribe(mqtt_sub2);
       MQTTclient.subscribe(mqtt_sub3);
     } else {
-      if(printCom){
+      if (printCom) {
         Serial.print("failed, rc = ");
         Serial.println(MQTTclient.state());
       }
@@ -482,19 +481,19 @@ void reconnect() {
 //======================================================================================
 //======================================================================================
 void loop() {
-  if(updateOTA) ArduinoOTA.handle();
+  if (updateOTA) ArduinoOTA.handle();
   server.handleClient();                                                                // дозволяємо HTTP серверу відповідать на запити
   updateTime();                                                                         // оновлюємо час
   buttonInter();
   bool oldBigCklok = bigCklock;
   //                                                                                          10 < 8     &&   10 >= 3
   bigCklock = ((clockNight == 1 && (timeDay<timeNight?(hour<timeDay || hour>=timeNight):(hour<timeDay && hour>=timeNight)))|| clockNight == 2) && butMode == 0;
-  if(oldBigCklok != bigCklock){
+  if (oldBigCklok != bigCklock){
     clr(0);
     clr(1);
     refreshAll();
   }
-  if(second != lastSecond) {                                                            // на початку нової секунди скидаємо secFr в "0"
+  if (second != lastSecond) {                                                            // на початку нової секунди скидаємо secFr в "0"
     lastSecond = second;
     if (volBrightnessAuto) {
       //levelBridhtness = map(analogRead(brightPin), 1023, 0, 0, 15);
@@ -513,48 +512,48 @@ void loop() {
       else sendCmdAll(CMD_INTENSITY, volBrightnessN);
     }
     secFr = 0;
-    if(lastMinute!=minute) {
-      if(hour==0 && minute==0 && second==0) {
+    if (lastMinute != minute) {
+      if (hour == 0 && minute == 0 && second == 0) {
         day++;
-        if(day==32 || (day==31 && (month==4 || month==6 || month==9 || month==11)) || (month==2 && ((day==29 && year%4!=0) || (day==30 && year%4==0)))) {
-          day=1;
+        if (day == 32 || (day == 31 && (month == 4 || month == 6 || month == 9 || month == 11)) || (month == 2 && ((day == 29 && year % 4 != 0) || (day == 30 && year % 4 == 0)))) {
+          day = 1;
           month++;
-          if(month>12){
-            month=1;
+          if (month > 12) {
+            month = 1;
             year++;
           }
         }
         dayOfWeek++;
-        if(dayOfWeek>7) dayOfWeek=1;
+        if (dayOfWeek > 7) dayOfWeek = 1;
       }
-      lastMinute=minute;
+      lastMinute = minute;
     }
   } else secFr++;                                                                       // якщо секунда ще не скінчилась то нарощуємо лічильник циклів secFr
-  if(minute == 0 && second == 0 && secFr == 0 && (hour >= kuOn && hour < kuOff)) {      // сигнал кожду годину 
+  if (minute == 0 && second == 0 && secFr == 0 && (hour >= kuOn && hour < kuOff)) {      // сигнал кожду годину 
     bips();
     bips();
   }
   //----------- РОБОТА З БУДИЛЬНИКОМ------------------------------------------------------
-  if(secFr == 0) {
-    if(second > 0 && alarms()) {
-      if(!alarm_stat && alarm_numer != 255 && !alarm_hold) alarm_stat = 1;
-    } else if(alarm_stat) {
+  if (secFr == 0) {
+    if (second > 0 && alarms()) {
+      if (!alarm_stat && alarm_numer != 255 && !alarm_hold) alarm_stat = 1;
+    } else if (alarm_stat) {
       alarm_stat = 0;
-      if(alarme[alarm_numer][2] == 11) alarme[alarm_numer][2] = 0;
-    } else if(alarm_hold != 0);
+      if (alarme[alarm_numer][2] == 11) alarme[alarm_numer][2] = 0;
+    } else if (alarm_hold != 0);
   }
   //------------- РОБОТА ЗІ СВЯТКОВИМИ ДАТАМИ ---------------------------------------------
-  if(secFr == 0) {
-    if(minute == 0) {
-      if(hour >= memory_hour_start && hour <= memory_hour_end && second < 15 && second > 2 && !alarm_stat){
-        for(byte i = 0; i < 9; i++) {
-          if(memory_date[i][0] == day && memory_date[i][1] == month){
+  if (secFr == 0) {
+    if (minute == 0) {
+      if (hour >= memory_hour_start && hour <= memory_hour_end && second < 15 && second > 2 && !alarm_stat) {
+        for (byte i = 0; i < 9; i++) {
+          if (memory_date[i][0] == day && memory_date[i][1] == month) {
             m_date = i;
             bip();
             bip();
             bip();
             printStringWithShift(("         "), timeScrollSpeed, 1);
-            printStringWithShift((m_date==0?memory_date_mes0:m_date==1?memory_date_mes1:m_date==2?memory_date_mes2:m_date==3?memory_date_mes3:m_date==4?memory_date_mes4:m_date==5?memory_date_mes5:m_date==6?memory_date_mes6:m_date==7?memory_date_mes7:memory_date_mes8), timeScrollSpeed, 1);
+            printStringWithShift((m_date == 0 ? memory_date_mes0 : m_date == 1 ? memory_date_mes1 : m_date == 2 ? memory_date_mes2 : m_date == 3 ? memory_date_mes3 : m_date == 4 ? memory_date_mes4 : m_date == 5 ? memory_date_mes5 : m_date == 6 ? memory_date_mes6 : m_date == 7 ? memory_date_mes7 : memory_date_mes8), timeScrollSpeed, 1);
             printStringWithShift(("         "), timeScrollSpeed, 1);
             break;
           }
@@ -564,40 +563,40 @@ void loop() {
   }
   buttonHandling();
   // ---------- ВИВІД НА ЕКРАН ГОДИННИКА АБО ТЕМПЕРАТУРИ ЧИ ВОЛОГОСТІ------------------------
-  if(!alarm_stat && secFr == 0 && butMode == 0 && !bigCklock) {
-    if(second == 25 && t1 != 85 && sensorDom) {
+  if (!alarm_stat && secFr == 0 && butMode == 0 && !bigCklock) {
+    if (second == 25 && t1 != 85 && sensorDom) {
       showSimpleTemp();
-    } else if(second == 42 && sensorUl && t4 != 85) {
+    } else if (second == 42 && sensorUl && t4 != 85) {
       showSimpleTempU();
-    } else if(second == 49 && sensorHome) {
+    } else if (second == 49 && sensorHome) {
       showSimpleTempH();
-    } else if(second == 56 && (sensorHumi && h1!=0)) {
+    } else if (second == 56 && (sensorHumi && h1!=0)) {
       showSimpleHum();
-    } else if(second == 03 && (sensorPrAl == 3 || sensorPrAl == 4)) {
+    } else if (second == 03 && (sensorPrAl == 3 || sensorPrAl == 4)) {
       showSimplePre();
-    } else if((timeScrollStart<timeScrollStop?(hour < timeScrollStart || hour >= timeScrollStop):(hour >= timeScrollStart || hour < timeScrollStop)) && second == 10) {
+    } else if( (timeScrollStart<timeScrollStop?(hour < timeScrollStart || hour >= timeScrollStop):(hour >= timeScrollStart || hour < timeScrollStop)) && second == 10) {
        showSimpleDate();
     }
-  } else if(alarm_stat && butMode == 0) {
-    if(secFr == 0 && second > 1 && second <= 59) {
+  } else if (alarm_stat && butMode == 0) {
+    if (secFr == 0 && second > 1 && second <= 59) {
       bip();
       bip();
     }
   }
   // --------------------------------------------------------------------------------------------------------
-  if(secFr == 0) {
-    if(second == 10 && minute == 1 && hour == 3) {
-      if(rtcStat){
+  if (secFr == 0) {
+    if (second == 10 && minute == 1 && hour == 3) {
+      if (rtcStat) {
         getRTCDateTime();
-        hour=hour_rtc;
-        minute=minute_rtc;
-        second=second_rtc;
-        day=day_rtc;
-        month=month_rtc;
-        year=year_rtc;
-        dayOfWeek=dayOfWeek_rtc;
-        if(printCom){
-          Serial.println("RTC update: "+String(hour)+":"+String(minute)+":"+String(second)+"    "+String(day)+"."+String(month)+"."+String(year)+" D="+String(dayOfWeek));
+        hour = hour_rtc;
+        minute = minute_rtc;
+        second = second_rtc;
+        day = day_rtc;
+        month = month_rtc;
+        year = year_rtc;
+        dayOfWeek = dayOfWeek_rtc;
+        if (printCom) {
+          Serial.println("RTC update: " + String(hour) + ":" + String(minute) + ":" + String(second) + "    " + String(day) + "." + String(month) + "." + String(year) + " D=" + String(dayOfWeek));
         }
       }
     }
@@ -1023,24 +1022,24 @@ int showChar(char ch, const uint8_t *data, byte zone) {
 }
 //==========ВИІД СИМВОЛУ НА ЕКРАН ch -  код символу, col- позиція, *data -  посилання на шрифт, zone - зона екрану===========
 void showDigit(char ch, int col, const uint8_t *data, byte zone) {
-  if(dy < -8 | dy > 8) return;
+  if ( dy < -8 | dy > 8) return;
   int len = pgm_read_byte(data);
   int w = pgm_read_byte(data + 1 + ch * len);
   col += dx + (zone ? NUM_MAX0*8:0);
-  for(int i = 0; i < w; i++) {
-    if(col + i >= 0 && col + i < 8 * (NUM_MAX0 + NUM_MAX1)) {
+  for (int i = 0; i < w; i++) {
+    if (col + i >= 0 && col + i < 8 * (NUM_MAX0 + NUM_MAX1)) {
       byte v = pgm_read_byte(data + 1 + ch * len + 1 + i);
-      if(!dy) scr[col + i] = v;
+      if (!dy) scr[col + i] = v;
       else scr[col + i] |= dy > 0 ? v >> dy : v << -dy;
     }
   }
 }
 //======================================================================================
 void setCol(int col, byte v) {
-  if(dy < -8 | dy > 8) return;
+  if (dy < -8 | dy > 8) return;
   col += dx;
-  if(col >= 0 && col < 8 * (NUM_MAX0 + NUM_MAX1)) {
-    if(!dy) scr[col] = v; else scr[col] |= dy > 0 ? v >> dy : v << -dy;
+  if (col >= 0 && col < 8 * (NUM_MAX0 + NUM_MAX1)) {
+    if (!dy) scr[col] = v; else scr[col] |= dy > 0 ? v >> dy : v << -dy;
   }
 }
 
@@ -1049,28 +1048,28 @@ byte dualChar = 0;
 unsigned char convert_fonts(unsigned char _c) {
   unsigned char c = _c;
   // конвертирование латиницы
-  if(c == 208) {
+  if (c == 208) {
     dualChar = 1;
     return 0;
   }
-  else if(c == 209 || c == 210) {
+  else if (c == 209 || c == 210) {
     dualChar = 2;
     return 0;
   }
-  if(c == 32 && dualChar != 3) {
+  if (c == 32 && dualChar != 3) {
     dualChar = 3;
     return c;
   }
-  if(dualChar == 1) {
-    if(c >= 144 && c < 192) {c += 48;}
+  if (dualChar == 1) {
+    if (c >= 144 && c < 192) {c += 48;}
     dualChar = 0;
     return c;
   }
-  if(dualChar == 2) {
-    if(c >= 128 && c < 144) {
+  if (dualChar == 2) {
+    if (c >= 128 && c < 144) {
       c += 112;
     } 
-    switch(_c) {
+    switch (_c) {
       case 144: c = 133; break;
       case 145: c = 149; break;
     }
@@ -1078,20 +1077,20 @@ unsigned char convert_fonts(unsigned char _c) {
     return c;
   }
   // конвертирование польского и немецкого
-  if(c == 195) {
+  if (c == 195) {
     dualChar = 4;
     return 0;
   }
-  if(c == 196) {
+  if (c == 196) {
     dualChar = 5;
     return 0;
   }
-  if(c == 197) {
+  if (c == 197) {
     dualChar = 6;
     return 0;
   }
-  if(dualChar == 4) {
-    switch(_c) {
+  if (dualChar == 4) {
+    switch (_c) {
       case 132: c = 177; break;
       case 147: c = 166; break;
       case 150: c = 179; break;
@@ -1105,25 +1104,25 @@ unsigned char convert_fonts(unsigned char _c) {
     dualChar = 0;
     return c;
   }
-  if(dualChar == 5) {
-    if(c >= 132 && c < 136) {
+  if (dualChar == 5) {
+    if (c >= 132 && c < 136) {
       c += 26;
     }
-    switch(_c) {
+    switch (_c) {
       case 152: c = 168; break;
       case 153: c = 169; break;
     }
     dualChar = 0;
     return c;
   }
-  if(dualChar == 6) {
-    if(c >= 129 && c < 133) {
+  if (dualChar == 6) {
+    if (c >= 129 && c < 133) {
       c += 33;
     }
-    if(c >= 154 && c < 156) {
+    if (c >= 154 && c < 156) {
       c += 16;
     }
-    if(c >= 185 && c < 189) {
+    if (c >= 185 && c < 189) {
       c -= 13;
     }  
     dualChar = 0;
@@ -1133,10 +1132,10 @@ unsigned char convert_fonts(unsigned char _c) {
 //==========
 void saveChrMas(String string_t, byte lenght_off, byte number_s) {
   byte lenght = string_t.length();
-  if(lenght>lenght_off) return;
+  if (lenght > lenght_off) return;
   const char *s = string_t.c_str();
   
-  for(int i=0; i<lenght; i++) {
+  for (int i = 0; i < lenght; i++) {
     //snprintf(*memory_date_mes[number_s], 1, "%s", *s);
     s++;
   }
@@ -1151,31 +1150,31 @@ void updateTime() {
   second = epoch % 60;
 }
 //==========ОНОВЛЕННЯ МЕРЕЖЕВОГО ЧАСУ (перевірка в три проходи)====================================================
-void timeUpdateNTP(){
-  if(!WIFI_connected) return;
-  if(printCom) printTime();
+void timeUpdateNTP() {
+  if (!WIFI_connected) return;
+  if (printCom) printTime();
   statusUpdateNtpTime = 1;
-  for(int timeTest = 0; timeTest < 3; timeTest++) {
+  for (int timeTest = 0; timeTest < 3; timeTest++) {
     getNTPtime();
-    if(printCom) {
-      if(timeTest) Serial.print("          ");
-      Serial.println("Proba #"+String(timeTest+1)+"   "+String(g_hour)+":"+((g_minute<10)?"0":"")+String(g_minute)+":"+((g_second<10)?"0":"")+String(g_second));
+    if (printCom) {
+      if (timeTest) Serial.print("          ");
+      Serial.println("Proba #" + String(timeTest + 1) + "   " + String(g_hour) + ":" + ((g_minute < 10) ? "0" : "") + String(g_minute) + ":" + ((g_second < 10) ? "0" : "") + String(g_second));
     }
    // updateTime();
 
     hourTest[timeTest] = g_hour;
-    minuteTest[timeTest] = (g_minute || (g_minute==59?0:g_minute++));
-    if(statusUpdateNtpTime == 0) {
-      if(printCom) {
+    minuteTest[timeTest] = (g_minute || (g_minute == 59 ? 0 : g_minute++));
+    if (statusUpdateNtpTime == 0) {
+      if (printCom) {
         printTime();
         Serial.print("ERROR TIME!!!\r\n");
       }
         return;
     }
-    if(timeTest > 0) {
-      if((hourTest[timeTest] != hourTest[timeTest - 1]||minuteTest[timeTest] != minuteTest[timeTest - 1])) {
+    if (timeTest > 0) {
+      if ((hourTest[timeTest] != hourTest[timeTest - 1] || minuteTest[timeTest] != minuteTest[timeTest - 1])) {
         statusUpdateNtpTime = 0;
-        if(printCom) {
+        if (printCom) {
           printTime();
           Serial.print("ERROR TIME!!!\r\n");
         }
@@ -1183,14 +1182,14 @@ void timeUpdateNTP(){
       }
     }
   }
-  hour=g_hour;
-  minute=g_minute;
-  second=g_second;
-  day=g_day;
-  dayOfWeek=g_dayOfWeek;
-  month=g_month;
-  year=g_year;
-  if(rtcStat){
+  hour = g_hour;
+  minute = g_minute;
+  second = g_second;
+  day = g_day;
+  dayOfWeek = g_dayOfWeek;
+  month = g_month;
+  year = g_year;
+  if (rtcStat) {
     hour_rtc = hour;
     minute_rtc = minute;
     second_rtc = second;
@@ -1203,17 +1202,17 @@ void timeUpdateNTP(){
   localMillisAtUpdate = millis();
   localEpoc = (hour * 60 * 60 + minute * 60 + second);
   saveTime();
-  if(printCom) {
+  if (printCom) {
     printTime();
     Serial.println((day < 10 ? "0" : "") + String(day) + "." + (month < 10 ? "0" : "") + String(month) + "." + String(year) + " DW = " + String(dayOfWeek));
     Serial.println("          Time update OK.");
   }
 }
 //==========ОТРИМАННЯ ДАТИ ТА ЧАСУ ВІД СЕРВЕРА ТОЧНОГО ЧАСУ =============================================================
-void getNTPtime(){
+void getNTPtime() {
   WiFi.hostByName(ntpServerName.c_str(), timeServerIP); 
   int cb;
-  for(int i = 0; i < 3; i++){
+  for (int i = 0; i < 3; i++) {
     memset(packetBuffer, 0, NTP_PACKET_SIZE);
     packetBuffer[0] = 0b11100011;
     packetBuffer[1] = 0;
@@ -1228,36 +1227,36 @@ void getNTPtime(){
     udp.endPacket();
     delay(800);                                             // чекаємо пів секуни
     cb = udp.parsePacket();
-    if(!cb && printCom) Serial.println("          no packet yet..." + String (i + 1)); 
-    if(!cb && i == 2) {                                              // якщо час не отримано
+    if (!cb && printCom) Serial.println("          no packet yet..." + String (i + 1)); 
+    if (!cb && i == 2) {                                              // якщо час не отримано
       statusUpdateNtpTime = 0;
       return;                                             // вихіз з getNTPtime()
     }
-    if(cb) i = 3;
+    if (cb) i = 3;
   }
-  if(cb) {                                                   // якщо отримали пакет з серверу
+  if (cb) {                                                   // якщо отримали пакет з серверу
     udp.read(packetBuffer, NTP_PACKET_SIZE);
     unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
     unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
     unsigned long secsSince1900 = highWord << 16 | lowWord;
     const unsigned long seventyYears = 2208988800UL;        // Unix час станом на 1 січня 1970. в секундах, то 2208988800:
     unsigned long epoch = secsSince1900 - seventyYears;
-    epochNM = epoch - (millis()/1000);
+    epochNM = epoch - (millis() / 1000);
     boolean summerTime;
-    if(month < 3 || month > 10) summerTime = false;             // не переходимо на літній час в січні, лютому, листопаді і грудню
-    if(month > 3 && month < 10) summerTime = true;              // Sommerzeit лічимо в квіні, травні, червені, липні, серпені, вересені
-    if(month == 3 && (hour + 24 * day) >= (3 + 24 * (31 - (5 * year / 4 + 4) % 7)) || month == 10 && (hour + 24 * day) < (3 + 24 * (31 - (5 * year / 4 + 1) % 7))) summerTime = true; 
-    epoch = epoch + (int)(timeZone*3600 + (3600*(isDayLightSaving && summerTime)));
+    if (month < 3 || month > 10) summerTime = false;             // не переходимо на літній час в січні, лютому, листопаді і грудню
+    if (month > 3 && month < 10) summerTime = true;              // Sommerzeit лічимо в квіні, травні, червені, липні, серпені, вересені
+    if (month == 3 && (hour + 24 * day) >= (3 + 24 * (31 - (5 * year / 4 + 4) % 7)) || month == 10 && (hour + 24 * day) < (3 + 24 * (31 - (5 * year / 4 + 1) % 7))) summerTime = true; 
+    epoch = epoch + (int)(timeZone * 3600 + (3600 * (isDayLightSaving && summerTime)));
     hourCorr = timeZone + (isDayLightSaving && summerTime);
     g_year = 0;
     int days = 0;
     uint32_t time;
-    time = epoch/86400;
+    time = epoch / 86400;
     g_hour = (epoch % 86400L) / 3600;
     g_minute = (epoch % 3600) / 60;
     g_second = epoch % 60;
     g_dayOfWeek = (((time) + 4) % 7) + 1;
-    while((unsigned)(days += (LEAP_YEAR(g_year) ? 366 : 365)) <= time) {
+    while ((unsigned)(days += (LEAP_YEAR(g_year) ? 366 : 365)) <= time) {
       g_year++;
     }
     days -= LEAP_YEAR(g_year) ? 366 : 365;
@@ -1265,13 +1264,13 @@ void getNTPtime(){
     days = 0;
     g_month = 0;
     uint8_t monthLength = 0;
-    for(g_month = 0; g_month < 12; g_month++){
-      if(g_month == 1){
-        if(LEAP_YEAR(g_year)) monthLength = 29;
+    for (g_month = 0; g_month < 12; g_month++) {
+      if (g_month == 1) {
+        if (LEAP_YEAR(g_year)) monthLength = 29;
         else monthLength = 28;
       }
       else monthLength = monthDays[g_month];
-      if(time >= monthLength) time -= monthLength;
+      if (time >= monthLength) time -= monthLength;
       else break;
     }
     g_month++;
@@ -1279,7 +1278,7 @@ void getNTPtime(){
     g_year += 1970;
     return;
   }
-  if(printCom) Serial.println("Nie ma czasu(((");
+  if (printCom) Serial.println("Nie ma czasu(((");
 }
 //===============================================================================================================================//
 //                              БЕРЕМО ПОГОДУ З САЙТУ  https://www.weatherbit.io                                                 //
@@ -1483,10 +1482,10 @@ void getWeatherDataz0() {
   updateForecasttomorrow = 0;
 }
 //=========================================================================================================
-void wifiConnect(){
-  if(printCom) {
+void wifiConnect() {
+  if (printCom) {
     printTime();
-    Serial.print("Connecting WiFi (ssid="+String(ssid.c_str())+"  pass="+String(password.c_str())+") ");
+    Serial.print("Connecting WiFi (ssid=" + String(ssid.c_str()) + "  pass=" + String(password.c_str()) + ") ");
   }
   WiFi.disconnect();
   WiFi.mode(WIFI_STA);
@@ -1569,33 +1568,33 @@ void sensorsAll() {
 }
 //-------------------------------------------------------------------------
 void sensors() {
-  t0 = (sensorDom==0?0:sensorDom==1?tempDs18b20:sensorDom==2?celsiusSi7021:sensorDom==3?tempBmp:sensorDom==4?tempBme:sensorDom==6?tMqtt1:sensorDom==7?tMqtt2:sensorDom==8?tMqtt3:0);
-  if(sensorDom) t0 += corrTempD;
+  t0 = (sensorDom == 0 ? 0 : sensorDom == 1 ? tempDs18b20 : sensorDom == 2 ? celsiusSi7021 : sensorDom == 3 ? tempBmp : sensorDom == 4 ? tempBme : sensorDom == 6 ? tMqtt1 : sensorDom == 7 ? tMqtt2 : sensorDom == 8 ? tMqtt3 : 0);
+  if (sensorDom) t0 += corrTempD;
   t1 = int(t0);
-  t2 = int(t0*10*(t0>0?1:-1))%10;
-  t3 = (sensorUl==0?0:sensorUl==1?tempDs18b20:sensorUl==2?celsiusSi7021:sensorUl==3?tempBmp:sensorUl==4?tempBme:sensorUl==6?tMqtt1:sensorUl==7?tMqtt2:sensorUl==8?tMqtt3:0);
-  if(sensorUl) t3 += corrTempU;
-  t4 = int(t3*-1);
-  t5 = int(t3*10*(t3>0?1:-1))%10;
-  t6 = (sensorHome==0?0:sensorHome==1?tempDs18b20:sensorHome==2?celsiusSi7021:sensorHome==3?tempBmp:sensorHome==4?tempBme:sensorHome==6?tMqtt1:sensorHome==7?tMqtt2:sensorHome==8?tMqtt3:0);
-  if(sensorHome) t6 += corrTempH;
-  h0 = (sensorHumi==2?humSi7021:sensorHumi==4?humBme:0);
-  if(sensorHumi) h0 += corrHumi;
+  t2 = int(t0 * 10 * (t0 > 0 ? 1 : -1)) % 10;
+  t3 = (sensorUl == 0 ? 0 : sensorUl == 1 ? tempDs18b20 : sensorUl == 2 ? celsiusSi7021 : sensorUl == 3 ? tempBmp : sensorUl == 4 ? tempBme : sensorUl == 6 ? tMqtt1 : sensorUl == 7 ? tMqtt2 : sensorUl == 8 ? tMqtt3 : 0);
+  if (sensorUl) t3 += corrTempU;
+  t4 = int(t3 * -1);
+  t5 = int(t3 * 10 * (t3 > 0 ? 1 : -1)) % 10;
+  t6 = (sensorHome == 0 ? 0 : sensorHome == 1 ? tempDs18b20 : sensorHome == 2 ? celsiusSi7021 : sensorHome == 3 ? tempBmp : sensorHome == 4 ? tempBme : sensorHome == 6 ? tMqtt1 : sensorHome == 7 ? tMqtt2 : sensorHome == 8 ? tMqtt3 : 0);
+  if (sensorHome) t6 += corrTempH;
+  h0 = (sensorHumi == 2 ? humSi7021 : sensorHumi == 4 ? humBme : 0);
+  if (sensorHumi) h0 += corrHumi;
   h1 = int(h0);
-  h2 = int(h0*10*(h0>0?1:-1))%10;
-  p0 = int(sensorPrAl==3?pressBmp:pressBme);
-  if(sensorPrAl) p0 += corrPress;
+  h2 = int(h0 * 10 * (h0 > 0 ? 1 : -1)) % 10;
+  p0 = int(sensorPrAl == 3 ? pressBmp : pressBme);
+  if (sensorPrAl) p0 += corrPress;
   p1 = p0 / 1000;
-  p2 = (p0 - p1*1000) / 100;
-  p3 = (p0 - p1*1000 - p2*100) / 10;
-  p4 = p0%10;
-  if(printCom) {
+  p2 = (p0 - p1 * 1000) / 100;
+  p3 = (p0 - p1 * 1000 - p2 * 100) / 10;
+  p4 = p0 % 10;
+  if (printCom) {
     printTime();
-    if(sensorDom) Serial.println("sensorDom  = " + String(t0));
-    if(sensorUl) Serial.println("          sensorUl   = " + String(t3));
-    if(sensorHome) Serial.println("          sensorHome = " + String(t6));
-    if(sensorHumi) Serial.println("          sensorHumi = " + String(h0));
-    if(sensorPrAl) Serial.println("          sensorPrAl = " + String(p0));
+    if (sensorDom) Serial.println("sensorDom  = " + String(t0));
+    if (sensorUl) Serial.println("          sensorUl   = " + String(t3));
+    if (sensorHome) Serial.println("          sensorHome = " + String(t6));
+    if (sensorHumi) Serial.println("          sensorHumi = " + String(h0));
+    if (sensorPrAl) Serial.println("          sensorPrAl = " + String(p0));
   }
 }
 //--------------------------------------------------------------------------
@@ -1604,12 +1603,12 @@ void sensorsDs18b20() {  //1
   byte type_s;
   byte data[12];
   byte addr[8];
-  if(!ds.search(addr)) {                                // Стартуємо функцію пошук першого або наступного датчика в addr-возвращаем ответ датчика
+  if (!ds.search(addr)) {                                // Стартуємо функцію пошук першого або наступного датчика в addr-возвращаем ответ датчика
     ds.reset_search();                                  // Якщо добігли кінця адресного простору, то скидуємо адрес на початок простору
     delay(250);                                         // Пауза
     return;                                             // Виходимо з підпрограми
   }
-  if(OneWire::crc8(addr, 7) != addr[7]) return;           // перевіряємо 7 байт в addr - он содержит crc8 
+  if (OneWire::crc8(addr, 7) != addr[7]) return;           // перевіряємо 7 байт в addr - он содержит crc8 
   ds.reset();
   ds.select(addr);
   ds.write(0x44, 1);
@@ -1617,76 +1616,76 @@ void sensorsDs18b20() {  //1
   present = ds.reset();
   ds.select(addr);    
   ds.write(0xBE);
-  for(byte i = 0; i < 9; i++) {
+  for (byte i = 0; i < 9; i++) {
     data[i] = ds.read();
   }
   int16_t raw = (data[1] << 8) | data[0];
-  if(type_s) {
+  if (type_s) {
     raw = raw << 3;
-    if(data[7] == 0x10) {
+    if (data[7] == 0x10) {
       raw = (raw & 0xFFF0) + 12 - data[6];
     }
   } else {
     byte cfg = (data[4] & 0x60);
-    if(cfg == 0x00) raw = raw & ~7;
-    else if(cfg == 0x20) raw = raw & ~3;
+    if (cfg == 0x00) raw = raw & ~7;
+    else if (cfg == 0x20) raw = raw & ~3;
     else if (cfg == 0x40) raw = raw & ~1;
   }
   tempDs18b20 = (float)raw / 16.00;
-  if(printCom) {
+  if (printCom) {
     printTime();
     Serial.println("Temperature DS18B20: " + String(tempDs18b20) + " *C");
   }
 }
 //--------------------------------------------------------------------------
 void sensorsSi7021() {  //2
-  if(si7021 == false) return;
+  if (si7021 == false) return;
   humSi7021 = sensor.readHumidity();
   celsiusSi7021 = sensor.readTemperature();
-  if(printCom) {
+  if (printCom) {
     printTime();
     Serial.println("Temperature Si7021: " + String(celsiusSi7021) + " *C,  Humidity: " + String(humSi7021) + " %");
   }
 }
 //--------------------------------------------------------------------------
 void sensorsBmp() {  //3
-  if(bmp280 == true) {
+  if (bmp280 == true) {
     tempBmp = bmp.readTemperature();
     pressBmp = bmp.readPressure() * (pressSys == 1 ? 0.007500613026439 : 1);
     pressBmp = (int) pressBmp;
     altBmp = bmp.readAltitude(1013.25);
-    if(printCom) {
+    if (printCom) {
       printTime();
-      if(bmp280 == true) Serial.println("Temperature BMP280: " + String(tempBmp) + " *C,  Pressure: " + String(pressBmp) + (pressSys == 1 ? " мм рт.ст." : " hPa") + ",  Approx altitude: " + String(altBmp) + " m");
+      if (bmp280 == true) Serial.println("Temperature BMP280: " + String(tempBmp) + " *C,  Pressure: " + String(pressBmp) + (pressSys == 1 ? " мм рт.ст." : " hPa") + ",  Approx altitude: " + String(altBmp) + " m");
     }
   }
-  if(BMP180 == true) {
+  if (BMP180 == true) {
     tempBmp = bmp180.readTemperature();
     pressBmp = bmp180.readPressure() * (pressSys == 1 ? 0.007500613026439 : 1);
     pressBmp = (int) pressBmp;
     altBmp = bmp180.readAltitude(101500);
-    if(printCom) {
+    if (printCom) {
       printTime();
-      if(BMP180 == true) Serial.println("Temperature BMP180: " + String(tempBmp) + " *C,  Pressure: " + String(pressBmp) + (pressSys == 1 ? " мм рт.ст." : " hPa") + ",  Approx altitude: " + String(altBmp) + " m");
+      if (BMP180 == true) Serial.println("Temperature BMP180: " + String(tempBmp) + " *C,  Pressure: " + String(pressBmp) + (pressSys == 1 ? " мм рт.ст." : " hPa") + ",  Approx altitude: " + String(altBmp) + " m");
     }
   }
 }
 //--------------------------------------------------------------------------
 void sensorsBme() {  //4
-  if(bme280 == false) return;
+  if (bme280 == false) return;
   tempBme = bme.readTempC();          //bme.readTempF()
   humBme = bme.readHumidity();
   pressBme = bme.readPressure() / (pressSys == 1 ? 1.3332239 : 1);
   pressBme = (int) pressBme;
   altBme = bme.readAltitudeFeet();   //bme.readAltitudeMeter()  bme.readAltitudeFeet()
-  if(printCom) {
+  if (printCom) {
     printTime();
     Serial.println("Temperature BME280: " + String(tempBme) + " *C,  Humidity: " + String(humBme) + " %,  Pressure: " + String(int(pressBme)) + (pressSys == 1 ? " мм рт.ст." : " hPa") + ",  Approx altitude: " + String(altBme) + " m");
   }
 }
 //--------------------------------------------------------------------------
 void printTime() {
-  if(printCom) Serial.print((hour < 10 ? "0" : "") + String(hour) + ":" + (minute < 10 ? "0" : "") + String(minute) + ":" + (second < 10 ? "0" : "") + String(second) + "  ");
+  if (printCom) Serial.print((hour < 10 ? "0" : "") + String(hour) + ":" + (minute < 10 ? "0" : "") + String(minute) + ":" + (second < 10 ? "0" : "") + String(second) + "  ");
 }
 //--------------------------------------------------------------------------
 void bip(){
@@ -1720,40 +1719,40 @@ void bips(){
 }
 //--------------------------------------------------------------------------
 byte alarms() {
-  for(byte i = 0; i < 5; i++) {
-    if(alarme[i][0]==hour&&alarme[i][1]==minute&&(alarme[i][2]==dayOfWeek||(alarme[i][2]==8&&(dayOfWeek>1&&dayOfWeek<7))||(alarme[i][2]==9&&dayOfWeek>1)||(alarme[i][2]==10&&(dayOfWeek==1||dayOfWeek==7))||alarme[i][2]>10)){
-      alarm_numer=i;
+  for (byte i = 0; i < 5; i++) {
+    if (alarme[i][0] == hour && alarme[i][1] == minute && (alarme[i][2] == dayOfWeek || (alarme[i][2] == 8 && (dayOfWeek > 1 && dayOfWeek < 7)) || (alarme[i][2] == 9 && dayOfWeek > 1) || (alarme[i][2] == 10 && (dayOfWeek == 1 || dayOfWeek == 7)) || alarme[i][2] > 10)) {
+      alarm_numer = i;
       return 1;
     }
   }
-  alarm_numer=255;
+  alarm_numer = 255;
   return 0;
 }
 //------------ function urlencode for weather parameters --------------------
 String urlencode(String str) {    // функция взята от http://forum.amperka.ru/members/benben.19545/
-    String encodedString="";
+    String encodedString = "";
     char c;
     char code0;
     char code1;
-    for (int i =0; i < str.length(); i++){
-      c=str.charAt(i);
-      if (c == ' '){
-        encodedString+= '+';
-      } else if (isalnum(c)){
-        encodedString+=c;
-      } else{
-        code1=(c & 0xf)+'0';
-        if ((c & 0xf) >9){
-            code1=(c & 0xf) - 10 + 'A';
+    for (int i = 0; i < str.length(); i++) {
+      c = str.charAt(i);
+      if (c == ' ') {
+        encodedString += '+';
+      } else if (isalnum(c)) {
+        encodedString += c;
+      } else {
+        code1 = (c & 0xf) + '0';
+        if ((c & 0xf) > 9) {
+            code1 = (c & 0xf) - 10 + 'A';
         }
-        c=(c>>4)&0xf;
-        code0=c+'0';
-        if (c > 9){
-            code0=c - 10 + 'A';
+        c = (c >> 4) & 0xf;
+        code0 = c + '0';
+        if (c > 9) {
+            code0 = c - 10 + 'A';
         }
-        encodedString+='%';
-        encodedString+=code0;
-        encodedString+=code1;
+        encodedString += '%';
+        encodedString += code0;
+        encodedString += code1;
       }
       yield();
     }
@@ -1762,7 +1761,7 @@ String urlencode(String str) {    // функция взята от http://forum
 //------------ function chr_to_str --------------------
 String chr_to_str(String str) {
   String chr_to_str = "";
-  for (int i =0; i < str.length(); i++){
+  for (int i = 0; i < str.length(); i++) {
     chr_to_str += str.charAt(i);
   }
   return chr_to_str;
@@ -1971,28 +1970,28 @@ void lang() {
   }
 }
 //-------------------------------------------------------------------------
-void buttonInter(){
-  if(digitalRead(BUT_PIN) == butStat && butCount == 0 && butFlag == 0  && butMode == 0){
+void buttonInter() {
+  if (digitalRead(BUT_PIN) == butStat && butCount == 0 && butFlag == 0  && butMode == 0) {
     butCount = millis();
     butFlag = 1;
   }
-  if((millis() - butCount) >= 30000 && butFlag == 1 && butMode == 0){
+  if ((millis() - butCount) >= 30000 && butFlag == 1 && butMode == 0) {
     butMode = 4;
     butFlag = 0;
     butCount = 0;
   }
-  if(digitalRead(BUT_PIN) == !butStat && (millis() - butCount) >= 10000 && butFlag == 1 && butMode == 0) {
+  if (digitalRead(BUT_PIN) == !butStat && (millis() - butCount) >= 10000 && butFlag == 1 && butMode == 0) {
     butMode = 3;
     butFlag = 0;
     butCount = 0;
   }
-  if(digitalRead(BUT_PIN) == !butStat && (millis() - butCount) < 10000 && (millis() - butCount) > 800 && (butFlag == 1 || butFlag == 2) && butMode == 0){
+  if (digitalRead(BUT_PIN) == !butStat && (millis() - butCount) < 10000 && (millis() - butCount) > 800 && (butFlag == 1 || butFlag == 2) && butMode == 0) {
     butMode = 1;
     butFlag = 0;
     butCount = 0;
   }
-  if(digitalRead(BUT_PIN) == !butStat && (millis() - butCount) <= 800 && butFlag == 1 && butMode == 0) butFlag = 2;
-  if(digitalRead(BUT_PIN) == butStat && (millis() - butCount) <= 800  && butFlag == 2){
+  if (digitalRead(BUT_PIN) == !butStat && (millis() - butCount) <= 800 && butFlag == 1 && butMode == 0) butFlag = 2;
+  if (digitalRead(BUT_PIN) == butStat && (millis() - butCount) <= 800  && butFlag == 2) {
     butMode = 2;
     butFlag = 0;
     butCount = 0;
@@ -2000,14 +1999,14 @@ void buttonInter(){
 }
 //------------- Обробка функцій кнопки -------------------------------------------------------
 void buttonHandling() {
-  if(alarm_stat && (butMode||stopAlarm)) { // если будильник работает, то любое нажатие выключает его
+  if (alarm_stat && (butMode||stopAlarm)) { // если будильник работает, то любое нажатие выключает его
     alarm_stat = 0;
     alarm_hold = 1;
     stopAlarm = false;
     butMode = 0;
-    if(alarme[alarm_numer][2] == 11) alarme[alarm_numer][2] = 0;
+    if (alarme[alarm_numer][2] == 11) alarme[alarm_numer][2] = 0;
   }
-  if(butMode == 4){ // если кнопка нажата была более 30 секунд то возврат к заводским установкам
+  if (butMode == 4) { // если кнопка нажата была более 30 секунд то возврат к заводским установкам
     butMode = 0;
     Serial.println("Ta to jest KAPUT!!!!!!");
     bip();
@@ -2015,14 +2014,14 @@ void buttonHandling() {
     bip();
     bip();
     SPIFFS.remove("/config.json");
-    if(printCom) {
+    if (printCom) {
       printTime();
       Serial.println("ESP erase Config file");
     }
     delay(3000);
     ESP.reset();
   }
-  if(butMode == 3){ // если кнопка была нажата более 10 секунд но менее 30, то будет рестарт часов
+  if (butMode == 3) { // если кнопка была нажата более 10 секунд но менее 30, то будет рестарт часов
     butMode = 0;
     Serial.println("Reset ESP!!!");
     bip();
@@ -2030,27 +2029,27 @@ void buttonHandling() {
     bip();
     ESP.reset();
   }
-  if(butMode == 1) {
+  if (butMode == 1) {
     bip();
     clr(1);
     refreshAll();
-    if(sensorDom) {
+    if (sensorDom) {
       showSimpleTemp();
       delay(1500);
     }
-    if(sensorUl) {
+    if (sensorUl) {
       showSimpleTempU();
       delay(1500);
     }
-    if(sensorHome) {
+    if (sensorHome) {
       showSimpleTempH();
       delay(1500);
     }
-    if(sensorHumi) {
+    if (sensorHumi) {
       showSimpleHum();
       delay(1500);
     }
-    if(sensorPrAl) {
+    if (sensorPrAl) {
       showSimplePre();
       delay(1500);
     }
@@ -2058,7 +2057,7 @@ void buttonHandling() {
     clr(1);
     refreshAll();
   }
-  if(butMode == 2){ // При двойном нажатии на кнопку выводится прогноз погоды
+  if (butMode == 2) { // При двойном нажатии на кнопку выводится прогноз погоды
     bip();
     bip();
     butMode = 0;

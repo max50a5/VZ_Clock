@@ -191,7 +191,7 @@ const char P_weath[] PROGMEM =  R"=====(
                   <center>
                     <table class = "table">    
                         <tr>
- <td align = "right"><span class="opt_cn">Название города</span></td>
+                            <td align = "right"><span class="opt_cn">Название города</span></td>
                             <td><span class="opt_cn">{{location_name}}</span></td>
                         </tr>
                         <tr>

@@ -32,10 +32,10 @@ const char P_index[] PROGMEM =  R"=====(
             </div>
             <div class="body__center">
                 <titles>
-                    <span class="opt_cn">Настройка WIFI</span>
+                    <span class="opt_cn">Настройки WIFI</span>
                 </titles>
                 <div class="informer">
-                    <span class="opt_cn">Подключение к сети Интернет позволит вам синхронизировать время и получать прогноз погоды</span>
+                    <span class="opt_cn">Введите натройки интернет соединения для обновления времени, получения данных о погоде, отправки и получения данных с погодных датчиков.</span>
                 </div>
                 <div id="main_unit">
                     <paragraph>
@@ -54,7 +54,7 @@ const char P_index[] PROGMEM =  R"=====(
                         </table>
                     </center>
                     <paragraph>
-                        <span class="opt_cn">Параметры точки доступа (IP_192.168.4.1)</span>
+                        <span class="opt_cn">Параметры точки доступа (IP 192.168.4.1)</span>
                     </paragraph>
                     <center>
                         <table>

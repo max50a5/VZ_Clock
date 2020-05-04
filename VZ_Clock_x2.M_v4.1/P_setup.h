@@ -9,7 +9,7 @@ const char P_setup[] PROGMEM =  R"=====(
         <script type = "text/javascript" src = "/function.js"></script>
         <script type = "text/javascript">
             function set_setup(submit) {
-                server = "/setup?tbd=" + val('tbd') + "&vbd=" + val('vbd') + "&tbn=" + val('tbn') + "&vbn=" + val('vbn') + "&vba=" + val_sw('vba') + "&rotate0=" + val('rotate0') + "&rotate1=" + val('rotate1') + "&kuOn=" + val('kuOn') + "&kuOff=" + val('kuOff');
+                server = "/setup?tbd=" + val('tbd') + "&vbd=" + val('vbd') + "&tbn=" + val('tbn') + "&vbn=" + val('vbn') + "&vba=" + val_sw('vba') + "&lowLivelBrightness=" + val('lowLivelBrightness') + "&upLivelBrightness=" + val('upLivelBrightness') + "&rotate0=" + val('rotate0') + "&rotate1=" + val('rotate1') + "&kuOn=" + val('kuOn') + "&kuOff=" + val('kuOff');
                 server += "&sensorDom=" + val('sensorDom') + "&sensorUl=" + val('sensorUl') + "&sensorHome=" + val('sensorHome') + "&sensorHumi=" + val('sensorHumi') + "&sensorPrAl=" + val('sensorPrAl') + "&pressSys=" + val('pressSys') + "&clockNight=" + val('clockNight') + "&buzzerOnOffku=" + val_sw('buzzerOnOffku')+ "&buzzerOnOff=" + val_sw('buzzerOnOff') + "&buzzerSet=" + val_sw('buzzerSet');
                 server += "&fontCLOCK=" + val('fontCLOCK') + "&aliData=" + val('aliData') + "&fontSizeCLOCK=" + val('fontSizeCLOCK') + "&fontSizeData=" + val('fontSizeData') + "&dataDown=" + val('dataDown') + "&textDown=" + val('textDown') + "&displayData=" + val('displayData');
                 server += "&corrTempD=" + val('corrTempD') + "&corrTempU=" + val('corrTempU') + "&corrTempH=" + val('corrTempH') + "&corrHumi=" + val('corrHumi') + "&corrPress=" + val('corrPress') + "&NUM_MAX0=" + val('NUM_MAX0') + "&NUM_MAX1=" + val('NUM_MAX1') + "&butStat=" + val('butStat');
@@ -144,6 +144,50 @@ const char P_setup[] PROGMEM =  R"=====(
                         <input type="checkbox" id="vba">
                         <span class="switch-btn"></span>
                     </label>
+                    <br>
+                    <table>
+                         <tr>
+                            <td align = "right"><span class="opt_cn">Уровень c фоторезистора низ</span></td>
+                            <td><select id = "lowLivelBrightness">
+                                <option value = "0"> 0 </option>
+                                <option value = "68"> 1 </option>
+                                <option value = "136"> 2 </option>
+                                <option value = "204"> 3 </option>
+                                <option value = "272"> 4 </option>
+                                <option value = "340"> 5 </option>
+                                <option value = "408"> 6 </option>
+                                <option value = "476"> 7 </option>
+                                <option value = "544"> 8 </option>
+                                <option value = "612"> 9 </option>
+                                <option value = "680"> 10 </option>
+                                <option value = "748"> 11 </option>
+                                <option value = "816"> 12 </option>
+                                <option value = "884"> 13 </option>
+                                <option value = "952"> 14 </option>
+                                <option value = "1023"> 15 </option>
+                            </select></td>
+                            <td align = "right"><span class="opt_cn">, верх</span></td>
+                            <td><select id = "upLivelBrightness">
+                                <option value = "0"> 0 </option>
+                                <option value = "68"> 1 </option>
+                                <option value = "136"> 2 </option>
+                                <option value = "204"> 3 </option>
+                                <option value = "272"> 4 </option>
+                                <option value = "340"> 5 </option>
+                                <option value = "408"> 6 </option>
+                                <option value = "476"> 7 </option>
+                                <option value = "544"> 8 </option>
+                                <option value = "612"> 9 </option>
+                                <option value = "680"> 10 </option>
+                                <option value = "748"> 11 </option>
+                                <option value = "816"> 12 </option>
+                                <option value = "884"> 13 </option>
+                                <option value = "952"> 14 </option>
+                                <option value = "1023"> 15 </option>
+                            </select></td>
+                        </tr>
+                        <tr></tr>
+                    </table>
                     <br>
                     <table id="table__font" class = "table">
                         <tr>

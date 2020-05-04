@@ -257,6 +257,8 @@ void handle_ConfigWeathJson() {
   json += cityID0;
   json += "\",\"cityID1\":\"";
   json += cityID1;
+  json += "\",\"personalCityName\":\"";
+  json += personalCityName;
   json += "\",\"weatherLang\":\"";
   json += weatherLang;
   json += "\",\"displayForecast\":\"";
@@ -307,8 +309,6 @@ void handle_ConfigWeathJson() {
   json += location_uv;
   json += "\",\"location_weather_description\":\"";
   json += location_weather_description;
-  json += "\",\"personalCityName\":\"";
-  json += personalCityName;
   json += "\"}";
   server.send(200, "text/json", json);
 }
@@ -642,7 +642,7 @@ void handle_setup(){
 }
 //======================================================================================================
 void handle_mqtt_ust() {
-  if(server.arg("mqtt_server")!="") snprintf(mqtt_server, 24, "%s", server.arg("mqtt_server").c_str());
+  if(server.arg("mqtt_server")!="") snprintf(mqtt_server, 30, "%s", server.arg("mqtt_server").c_str());
   if(server.arg("mqtt_port")!="") mqtt_port = server.arg("mqtt_port").toInt();
   if(server.arg("mqtt_user")!="") snprintf(mqtt_user, 24, "%s", server.arg("mqtt_user").c_str());
   if(server.arg("mqtt_pass")!="") snprintf(mqtt_pass, 24, "%s", server.arg("mqtt_pass").c_str());
@@ -661,9 +661,9 @@ void handle_mqtt_ust() {
     Serial.println("Set mqtt_server: " + String(mqtt_server) + ",  mqtt_port: " + String(mqtt_port) + ",  mqtt_user: " + String(mqtt_user) + ",  mqtt_pass: " + String(mqtt_pass) + ", mqtt_name: " + String(mqtt_name));
     Serial.println("          Set mqtt_sub1: " + String(mqtt_sub1) + ",  mqtt_sub2: " + String(mqtt_sub2) + ",  mqtt_sub3: " + String(mqtt_sub3)+ ",  mqtt_sub_inform: " + String(mqtt_sub_inform) + ",  mqtt_pub_temp: " + String(mqtt_pub_temp) + ",  mqtt_pub_tempUl: " + String(mqtt_pub_tempUl) + ",  mqtt_pub_hum: " + String(mqtt_pub_hum));
   }
+  if(mqttOn) reconnect();  
   saveConfig(); 
   server.send(200, "text/plain", "OK");
-  if(mqttOn) reconnect();
 }
 //======================================================================================================
 void handle_mqtt_on() {
