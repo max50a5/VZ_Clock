@@ -12,6 +12,7 @@
  +3,3 - rezistor 2-100k _______A0              |
 ______________________________________________*/
 #define ver "x1_4.1"
+#define mod "max"
 
 #include <Wire.h>
 #include "Arduino.h"

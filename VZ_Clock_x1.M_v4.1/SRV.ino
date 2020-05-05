@@ -36,6 +36,8 @@ void handle_ConfigJSON() {
   String json = "{";
   json += "\"ver\":\"";
   json += ver;
+  json += "\"mod\":\"";
+  json += mod;
   json += "\",\"time\":\"";
   json += (String(hour) + ":" + (minute < 10 ? "0" : "") + String(minute) + ":" + (second < 10 ? "0" : "") + String(second));
   json += "\",\"ip\":\"";
@@ -50,6 +52,8 @@ void handle_ConfigWifiJson() {
 String json = "{";
   json += "\"ver\":\"";
   json += ver;
+  json += "\"mod\":\"";
+  json += mod;
   json += "\",\"time\":\"";
   json += (String(hour) + ":" + (minute < 10 ? "0" : "") + String(minute) + ":" + (second < 10 ? "0" : "") + String(second));
   json += "\",\"ssid\":\"";
@@ -68,6 +72,8 @@ void handle_ConfigTimeJson() {
   String json = "{";
   json += "\"ver\":\"";
   json += ver;
+  json += "\"mod\":\"";
+  json += mod;
   json += "\",\"time\":\"";
   json += (String(hour) + ":" + (minute < 10 ? "0" : "") + String(minute) + ":" + (second < 10 ? "0" : "") + String(second));
   json += "\",\"ntpServerName\":\"";
@@ -172,6 +178,8 @@ void handle_ConfigMqttJson() {
   String json = "{";
   json += "\"ver\":\"";
   json += ver;
+  json += "\"mod\":\"";
+  json += mod;  
   json += "\",\"time\":\"";
   json += (String(hour) + ":" + (minute < 10 ? "0" : "") + String(minute) + ":" + (second < 10 ? "0" : "") + String(second));
   json += "\",\"mqttOn\":\"";
@@ -249,6 +257,8 @@ void handle_ConfigWeathJson() {
   String json = "{";
   json += "\"ver\":\"";
   json += ver;
+  json += "\"mod\":\"";
+  json += mod;
   json += "\",\"time\":\"";
   json += (String(hour) + ":" + (minute < 10 ? "0" : "") + String(minute) + ":" + (second < 10 ? "0" : "") + String(second));
   json += "\",\"weatherKey0\":\"";
@@ -317,6 +327,8 @@ void handle_ConfigSetupJson() {
   String json = "{";
   json += "\"ver\":\"";
   json += ver;
+  json += "\"mod\":\"";
+  json += mod;
   json += "\",\"time\":\"";
   json += (String(hour) + ":" + (minute < 10 ? "0" : "") + String(minute) + ":" + (second < 10 ? "0" : "") + String(second));
   json += "\",\"kuOn\":\"";
