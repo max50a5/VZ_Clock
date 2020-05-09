@@ -28,7 +28,6 @@ const char P_setup[] PROGMEM =  R"=====(
                 <a class="link__img" href="/index.html"><span class="ico__text">Wifi</span></a>
                 <a class="link__img" href="/time.html"><span class="ico__text">Время</span></a>
                 <a class="link__img" href="/mqtt.html"><span class="ico__text">Mqtt</span></a>
-                <a class="link__img" href="/thing.html"><span class="ico__text">thing</span></a>
                 <a class="link__img" href="/weather.html"><span class="ico__text">Прогноз</span></a>
                 <a class="link__img" href="/setup.html"><span class="ico__text">Настройки</span></a>
                 <a class="link__img" href="/help.html"><span class="ico__text">Помощь</span></a>
