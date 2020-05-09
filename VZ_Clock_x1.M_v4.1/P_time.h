@@ -9,7 +9,7 @@ const char P_time[] PROGMEM =  R"=====(
         <script type = "text/javascript" src = "/function.js"></script>
         <script type = "text/javascript">
             function set_ntp(submit) {
-                server = "/ntp?ntpServerName=" + val('ntpServerName') + "&timeZone=" + val('timeZone') + "&rtcStat=" + val_sw('rtcStat');
+                server = "/ntp?ntpServerName=" + val('ntpServerName') + "&timeZone=" + val('timeZone') + "&isDayLightSaving=" + val_sw('isDayLightSaving') + "&rtcStat=" + val_sw('rtcStat');
                 server += "&al_0_0=" + val('al_0_0') + "&al_0_1=" + val('al_0_1') + "&al_0_2=" + val('al_0_2');
                 server += "&al_1_0=" + val('al_1_0') + "&al_1_1=" + val('al_1_1') + "&al_1_2=" + val('al_1_2');
                 server += "&al_2_0=" + val('al_2_0') + "&al_2_1=" + val('al_2_1') + "&al_2_2=" + val('al_2_2');
@@ -104,6 +104,11 @@ const char P_time[] PROGMEM =  R"=====(
                     <option value="13.00" > (GMT) +13:00 </option>
                     <option value="14.00" > (GMT) +14:00 </option>
                 </select>
+                <br>
+                <label class="switch"><span class="opt_cn">Переход на летнее время (Да/Нет)</span>
+                    <input type="checkbox" id="isDayLightSaving">
+                    <span class="switch-btn"></span>
+                </label>
                 <br>
                 <label class="switch"><span class="opt_cn">Часы реального времени (Вкл./Выкл.)</span>
                     <input type="checkbox" id="rtcStat">

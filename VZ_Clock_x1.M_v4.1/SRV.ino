@@ -80,6 +80,8 @@ void handle_ConfigTimeJson() {
   json += ntpServerName;
   json += "\",\"timeZone\":\"";
   json += timeZone;
+  json += "\",\"isDayLightSaving\":\"";
+  json += (isDayLightSaving==1?"checked":"");
   json += "\",\"rtcStat\":\"";
   json += (rtcStat==1?"checked":"");
   json += "\",\"al_0_0\":\"";
@@ -426,6 +428,7 @@ void handle_Set_Ssid() {
 void handle_ntp() {
   if(server.arg("ntpServerName")!="") ntpServerName = server.arg("ntpServerName").c_str();
   if(server.arg("timeZone")!="") timeZone = server.arg("timeZone").toFloat();
+  if(server.arg("isDayLightSaving")!="") isDayLightSaving = server.arg("isDayLightSaving").toInt();
   if(server.arg("rtcStat")!="") rtcStat = server.arg("rtcStat").toInt();
   if(server.arg("al_0_0")!="") alarme[0][0]=server.arg("al_0_0").toInt();
   if(server.arg("al_0_1")!="") alarme[0][1]=server.arg("al_0_1").toInt();
@@ -473,7 +476,7 @@ void handle_ntp() {
   if(server.arg("md_stop")!="") memory_hour_end = server.arg("md_stop").toInt();
   if(printCom) {
     printTime();
-    Serial.println("Set NTP Server Name: " + ntpServerName + ",  NTP Time Zone: " + String(timeZone));
+    Serial.println("Set NTP Server Name: " + ntpServerName + ",  NTP Time Zone: " + String(timeZone) + ",  isDayLightSaving: " + String(isDayLightSaving));
   }
   alarm_hold=0;
   saveConfig();

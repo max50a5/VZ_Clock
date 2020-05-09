@@ -22,6 +22,7 @@ bool loadConfig() {                                                // Заван
   password = doc["password"].as<String>();
   ntpServerName = doc["ntpServerName"].as<String>();
   timeZone = doc["timeZone"];                                      // Так отримуємо число
+  isDayLightSaving = doc["isDayLightSaving"];  
   kuOn = doc["kuOn"];
   kuOff = doc["kuOff"];
   weatherKey0 = doc["weatherKey0"].as<String>();
@@ -151,6 +152,7 @@ bool saveConfig() {
   doc["password"] = password;
   doc["ntpServerName"] = ntpServerName;
   doc["timeZone"] = timeZone;
+  doc["isDayLightSaving"] = isDayLightSaving;  
   doc["kuOn"] = kuOn;
   doc["kuOff"] = kuOff;
   doc["weatherKey0"] = weatherKey0;
