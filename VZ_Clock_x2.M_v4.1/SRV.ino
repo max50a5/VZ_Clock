@@ -3,6 +3,7 @@ void serverInit(void) {
   server.on("/index.html", [](){server.send_P(200, "text/html", P_index);});
   server.on("/time.html", [](){server.send_P(200, "text/html", P_time);}); 
   server.on("/weather.html", [](){server.send_P(200, "text/html", P_weath);});
+  server.on("/thing.html", [](){server.send_P(200, "text/html", P_thing);}); 
   server.on("/mqtt.html", [](){server.send_P(200, "text/html", P_mqtt);});
   server.on("/setup.html", [](){server.send_P(200, "text/html", P_setup);});
   server.on("/help.html", [](){server.send_P(200, "text/html", P_help);});
@@ -13,6 +14,7 @@ void serverInit(void) {
   server.on("/configs.json", handle_ConfigJSON);    // формування configs.json сторінки для передачі данних в web інтерфейс
   server.on("/configs_wifi.json", handle_ConfigWifiJson);
   server.on("/configs_time.json", handle_ConfigTimeJson);
+  server.on("/configs_thing.json", handle_ConfigThingJson);
   server.on("/configs_mqtt.json", handle_ConfigMqttJson);
   server.on("/configs_weath.json", handle_ConfigWeathJson);
   server.on("/configs_setup.json", handle_ConfigSetupJson);
@@ -21,6 +23,8 @@ void serverInit(void) {
   server.on("/timepc", handle_timepc);
   server.on("/weatherUpdate", handle_weather_update);
   server.on("/weather", handle_weather);    // Установка сервера погоди по запиту типа http://192.168.2.100/weatherHost?weatherHost=api.openweathermap.org
+  server.on("/thingUst", handle_thing_ust);
+  server.on("/thingOn", handle_thing_on);
   server.on("/mqttUst", handle_mqtt_ust);
   server.on("/mqttOn", handle_mqtt_on);
   server.on("/setup", handle_setup);
@@ -172,6 +176,24 @@ void handle_ConfigTimeJson() {
   json += memory_hour_start;
   json += "\",\"md_stop\":\"";
   json += memory_hour_end;
+  json += "\"}";
+  server.send(200, "text/json", json);
+}
+//======================================================================================================
+void handle_ConfigThingJson() {
+  String json = "{";
+  json += "\"ver\":\"";
+  json += ver;
+  json += "\",\"mod\":\"";
+  json += mod;
+  json += "\",\"time\":\"";
+  json += (String(hour) + ":" + (minute < 10 ? "0" : "") + String(minute) + ":" + (second < 10 ? "0" : "") + String(second));
+  json += "\",\"thingOn\":\"";
+  json += (thingOn==1?"checked":"");
+  json += "\",\"humThinkOnOff\":\"";
+  json += (humThinkOnOff==1?"checked":"");
+  json += "\",\"channelid\":\"";
+  json += channelid;
   json += "\"}";
   server.send(200, "text/json", json);
 }
@@ -368,13 +390,15 @@ void handle_ConfigSetupJson() {
   json += "\",\"Td\":\"";
   json += t0;
   json += "\",\"sensorUl\":\"";
-  json += (sensorUl==0?"NONE":sensorUl==1?"DS18B20":sensorUl==2?"SI7021":sensorUl==3?"BMP280":sensorUl==4?"BME280":sensorUl==6?"MQTT1":sensorUl==7?"MQTT2":sensorUl==8?"MQTT3":"NONE");
+  json += (sensorUl==0?"NONE":sensorUl==1?"DS18B20":sensorUl==2?"SI7021":sensorUl==3?"BMP280":sensorUl==4?"BME280":sensorUl==6?"MQTT1":sensorUl==7?"MQTT2":sensorUl==8?"MQTT3":sensorUl==10?"THING":"NONE");
   json += "\",\"corrTempU\":\"";
   json += corrTempU;
   json += "\",\"Tu\":\"";
   json += t3;
+  json += "\",\"sensorH\":\"";
+  json += sensorH;  
   json += "\",\"sensorHome\":\"";
-  json += (sensorHome==0?"NONE":sensorHome==1?"DS18B20":sensorHome==2?"SI7021":sensorHome==3?"BMP280":sensorHome==4?"BME280":sensorHome==6?"MQTT1":sensorHome==7?"MQTT2":sensorHome==8?"MQTT3":"NONE");
+  json += (sensorHome==0?"NONE":sensorHome==1?"DS18B20":sensorHome==2?"SI7021":sensorHome==3?"BMP280":sensorHome==4?"BME280":sensorHome==6?"MQTT1":sensorHome==7?"MQTT2":sensorHome==8?"MQTT3":sensorHome==10?"THING":"NONE");
   json += "\",\"corrTempH\":\"";
   json += corrTempH;
   json += "\",\"Th\":\"";
@@ -386,7 +410,7 @@ void handle_ConfigSetupJson() {
   json += "\",\"Hd\":\"";
   json += h0;
   json += "\",\"sensorPrAl\":\"";
-  json += (sensorPrAl==0?"NONE":sensorPrAl==3?"BMP280":sensorPrAl==4?"BME280":"NONE");
+  json += (sensorPrAl==0?"NONE":sensorPrAl==3?"BMP280":sensorPrAl==4?"BME280":sensorPrAl==10?"THING":"NONE");
   json += "\",\"corrPress\":\"";
   json += corrPress;
   json += "\",\"Pu\":\"";
@@ -568,6 +592,28 @@ void handle_weather() {
   server.send(200, "text/plain", "OK");
 }
 //======================================================================================================
+void handle_thing_ust() {
+  if(server.arg("humThinkOnOff")!="") humThinkOnOff = server.arg("humThinkOnOff").toInt();
+  if(server.arg("channelid")!="") channelid = server.arg("channelid").c_str();
+  if(printCom) {
+    printTime();
+    Serial.println("channelid: "+String(channelid)+",  humThinkOnOff: "+String(humThinkOnOff));
+    Serial.println("          temp Think: " + String(tempThink) + "°C ,  hum Think: " + String(humThink) + "% ,  press Think: " + String(pressThink) + "мм ,  bat Think: " + String(batThink) + "В");
+  }
+  saveConfig();
+  sensorsAll();
+  server.send(200, "text/plain", "OK");
+}
+//======================================================================================================
+void handle_thing_on() {
+  if(server.arg("thingOn")!="") thingOn = server.arg("thingOn").toInt(); 
+  if(printCom) {
+    printTime();
+    Serial.println("thingOn: " + server.arg("thingOn"));
+  }
+  server.send(200, "text/plain", "OK");
+}
+//======================================================================================================
 void handle_setup(){
   if(server.arg("tbd")!="") timeDay = server.arg("tbd").toInt();
   if(server.arg("vbd")!="") volBrightnessD = server.arg("vbd").toInt();
@@ -610,6 +656,7 @@ void handle_setup(){
     else if(sU=="MQTT1") sensorUl = 6;
     else if(sU=="MQTT2") sensorUl = 7;
     else if(sU=="MQTT3") sensorUl = 8;
+    else if(sU=="THING") sensorUl = 10;
   }
   if(sHo!=""){
     if(sHo=="NONE") sensorHome = 0;
@@ -620,6 +667,7 @@ void handle_setup(){
     else if(sHo=="MQTT1") sensorHome = 6;
     else if(sHo=="MQTT2") sensorHome = 7;
     else if(sHo=="MQTT3") sensorHome = 8;
+    else if(sHo=="THING") sensorHome = 10;
   }
   if(sH!=""){
     if(sH=="NONE") sensorHumi = 0;
@@ -630,6 +678,7 @@ void handle_setup(){
     if(sP=="NONE") sensorPrAl = 0;
     else if(sP=="BMP280") sensorPrAl = 3;
     else if(sP=="BME280") sensorPrAl = 4;
+    else if(sP=="THING") sensorPrAl = 10;
   }
   if(server.arg("pressSys")!="") pressSys = server.arg("pressSys").toInt();
   if(server.arg("timeOutMqtt")!="") timeOutMqtt = server.arg("timeOutMqtt").toInt();
@@ -646,10 +695,11 @@ void handle_setup(){
   if(server.arg("corrPress")!="") corrPress = server.arg("corrPress").toInt();
   if(server.arg("displayData")!="") displayData = server.arg("displayData").toInt();
   if(server.arg("butStat")!="") butStat = server.arg("butStat").toInt();
+  if(server.arg("sensorH")!="") sensorH = server.arg("sensorH").toInt();
   if(printCom) {
     printTime();
-    Serial.println("TBD: "+String(timeDay)+", VBD: "+String(volBrightnessD)+", TBN: "+String(timeNight)+", VBN: "+String(volBrightnessN)+",  kuOn: "+String(kuOn)+",  kuOff: "+String(kuOff)+",  rotate0: "+String(rotate0)+", rotate1: "+String(rotate1)+", clockNight: "+String(clockNight)+", buzzerSet: "+String(buzzerSet));
-    Serial.println("sensorDom: "+String(sensorDom)+", sensorUl: "+String(sensorUl)+", sensorHome: "+String(sensorHome)+", sensorHumi: "+String(sensorHumi)+",  sensorPrAl: "+String(sensorPrAl));
+    Serial.println("TBD: "+String(timeDay)+", VBD: "+String(volBrightnessD)+", TBN: "+String(timeNight)+", VBN: "+String(volBrightnessN)+",  kuOn: "+String(kuOn)+",  kuOff: "+String(kuOff)+",  rotate0: "+String(rotate0)+", rotate1: "+String(rotate1)+", clockNight: "+String(clockNight)+", buzzerOnOffku: "+String(buzzerOnOffku)+", buzzerOnOff: "+String(buzzerOnOff)+", buzzerSet: "+String(buzzerSet));
+    Serial.println("sensorDom: "+String(sensorDom)+", sensorUl: "+String(sensorUl)+", sensorH: "+String(sensorH)+", sensorHome: "+String(sensorHome)+", sensorHumi: "+String(sensorHumi)+",  sensorPrAl: "+String(sensorPrAl));
   }
   saveConfig();
   sensorsAll();

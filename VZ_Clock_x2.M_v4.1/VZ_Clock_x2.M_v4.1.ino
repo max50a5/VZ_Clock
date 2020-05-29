@@ -49,6 +49,7 @@ IPAddress apIP(192, 168, 4, 1);
 #include "P_Setup.h"
 #include "P_help.h"
 #include "P_mqtt.h"
+#include "P_thing.h"
 
 // ===================================================
 String ssid = "Wifi";
@@ -94,6 +95,11 @@ char mqtt_pub_hum[25] = "Informer/hum";
 char mqtt_pub_press[25] = "Informer/press";
 char mqtt_pub_alt[25] = "Informer/alt";
 bool mqttOn = true;
+// ===================================================thingspeak
+String channelid = "";
+String oldcreatedat = "";
+bool humThinkOnOff = true;
+bool thingOn = true;
 // =====================================================================================
 bool printCom = true;
 #define MAX_DIGITS 16
@@ -209,7 +215,13 @@ unsigned long counterMqtt1 = 0;
 unsigned long counterMqtt2 = 0;
 unsigned long counterMqtt3 = 0;
 int timeOutMqtt = 1200000; // таймаут обновления данных - 20 минут
-float tempNM = 0.0;
+unsigned long counterThink = 0;
+float tempThink = 0.0; //температура с ThingSpeak со знаком и плавающей запятой
+float humThink = 0.0; // влажность на улице с ThingSpeak со знаком и плавающей запятой
+byte hT1 = 0;    // влажность на улице с ThingSpeak целая беззнаковая часть
+byte hT2 = 0;    // влажность на улице с ThingSpeak дробная беззнаковая часть
+float pressThink = 0.0; // джавление с ThingSpeak со знаком и плавающей запятой
+float batThink = 0.0; // Заряд АКБ с ThingSpeak со знаком и плавающей запятой
 bool pressSys = 1;
 int p0;
 byte p1;
@@ -244,10 +256,11 @@ float corrTempH = 0;
 float corrHumi  = 0;
 int   corrPress = 0;
 byte sensorDom = 0;          //NONE = 0, DS18B20 = 1, Si7021 = 2, BMP280 = 3, BME280 = 4, MQTT1 = 6, MQTT2 = 7, MQTT3 = 8;
-byte sensorUl = 0;           //NONE = 0, DS18B20 = 1, Si7021 = 2, BMP280 = 3, BME280 = 4, MQTT1 = 6, MQTT2 = 7, MQTT3 = 8;
-byte sensorHome = 0;         //NONE = 0, DS18B20 = 1, Si7021 = 2, BMP280 = 3, BME280 = 4, MQTT1 = 6, MQTT2 = 7, MQTT3 = 8;
-byte sensorHumi = 0;         //NONE = 0, NONE    = 1, Si7021 = 2, NONE   = 3, BME280 = 4,  NONE = 6;
-byte sensorPrAl = 0;         //NONE = 0, NONE    = 1, NONE   = 2, BMP280 = 3, BME280 = 4, NONE = 5, NONE = 6;
+byte sensorUl = 0;           //NONE = 0, DS18B20 = 1, Si7021 = 2, BMP280 = 3, BME280 = 4, MQTT1 = 6, MQTT2 = 7, MQTT3 = 8, THING = 10;
+byte sensorH = 0;            //Доп. дан. = 0, АКБ = 1;
+byte sensorHome = 0;         //NONE = 0, DS18B20 = 1, Si7021 = 2, BMP280 = 3, BME280 = 4, MQTT1 = 6, MQTT2 = 7, MQTT3 = 8, THING = 10;
+byte sensorHumi = 0;         //NONE = 0, NONE    = 1, Si7021 = 2, NONE   = 3, BME280 = 4, NONE = 6;
+byte sensorPrAl = 0;         //NONE = 0, NONE    = 1, NONE   = 2, BMP280 = 3, BME280 = 4, NONE = 6, THING = 10;
 String tNow, tCurr, tPress, tPress0, tSpeed, tMin, tTom, tYour, tPoint, tIp, tPass, tWeatrNot, tWeatrTN;
 bool alarm_stat = 0;
 bool alarm_hold = 0;
@@ -382,6 +395,7 @@ void setup() {
     ArduinoOTA.begin();
   }
   if(WiFi.status() == WL_CONNECTED) {
+    if(thingOn == 1) getThinks();
     if(displayForecast){
       if(weatherHost==0) {
         getWeatherData0();
@@ -573,7 +587,7 @@ void loop() {
       showSimpleTempH();
     } else if (second == 56 && (sensorHumi && h1!=0)) {
       showSimpleHum();
-    } else if (second == 03 && (sensorPrAl == 3 || sensorPrAl == 4)) {
+    } else if (second == 03 && sensorPrAl) { //(sensorPrAl == 3 || sensorPrAl == 4))
       showSimplePre();
     } else if( (timeScrollStart<timeScrollStop?(hour < timeScrollStart || hour >= timeScrollStop):(hour >= timeScrollStart || hour < timeScrollStop)) && second == 10) {
        showSimpleDate();
@@ -637,6 +651,8 @@ void loop() {
     }
     // ---------- 43 секунда оновленя мережевого часу кожну хвилину або в 5 хвилину кожного часу
     if(((statusUpdateNtpTime == 0 && second == 43) || (minute == 02 && second == 43)) && !alarm_stat) timeUpdateNTP();
+    // ---------- 45 секунда забираем данные с thingspeak каждую 5 минуту часа
+    if((second == 45 && minute%5 == 0) && thingOn == 1) getThinks();
     // ---------- 46 cек. оновлюємо прогноз погоди ------------------------------------- 
     if(second == 46 && hour >= timeScrollStart && hour <= timeScrollStop && !alarm_stat) {
       if(minute == 14 || minute == 44 || updateForecast || updateForecasttomorrow) {
@@ -739,7 +755,7 @@ void showSimpleTempU() {
     dx = dy = 0;
     clr(1);
     showDigit((t3 < 0.0 ? 6 : 5), 0 + indent, (fontSizeData?znaki5x7:znaki5x8), 1); //друкуємо U+ альбо U-
-    if((sensorUl==6&&millis()-counterMqtt1>timeOutMqtt)||(sensorUl==7&&millis()-counterMqtt2>timeOutMqtt)||(sensorUl==8&&millis()-counterMqtt3>timeOutMqtt)){
+    if((sensorUl==6&&millis()-counterMqtt1>timeOutMqtt)||(sensorUl==7&&millis()-counterMqtt2>timeOutMqtt)||(sensorUl==8&&millis()-counterMqtt3>timeOutMqtt)||(sensorUl==10&&millis()-counterThink>900000)){
       showDigit(13 , 4 + indent, fontUA_RU_PL_DE, 1);
       showDigit(13, 10 + indent, fontUA_RU_PL_DE, 1);
       showDigit( 2, 16 + indent, znaki5x8, 1);
@@ -762,8 +778,12 @@ void showSimpleTempH() {
     byte indent = aliData*(NUM_MAX1-4);
     dx = dy = 0;
     clr(1);
-    showDigit((t6 < 0.0 ? 18 : 17), 0 + indent, (fontSizeData?znaki5x7:znaki5x8), 1); //друкуємо U+ альбо U-
-    if((sensorHome==6&&millis()-counterMqtt1>timeOutMqtt)||(sensorHome==7&&millis()-counterMqtt2>timeOutMqtt)||(sensorHome==8&&millis()-counterMqtt3>timeOutMqtt)){
+    if(sensorH==0){    
+    showDigit((t6 < 0.0 ? 18 : 17), 0 + indent, (fontSizeData?znaki5x7:znaki5x8), 1); //друкуємо H+ альбо H-
+    } else if(sensorH==1){
+      showDigit(20, 0 + indent, (fontSizeData?znaki5x7:znaki5x8), 1); //Батарейка
+      }    
+    if((sensorHome==6&&millis()-counterMqtt1>timeOutMqtt)||(sensorHome==7&&millis()-counterMqtt2>timeOutMqtt)||(sensorHome==8&&millis()-counterMqtt3>timeOutMqtt)||(sensorHome==10&&millis()-counterThink>900000)){
       showDigit(13, 9 + indent, fontUA_RU_PL_DE, 1);
       showDigit(13, 15 + indent, fontUA_RU_PL_DE, 1);
       showDigit(13, 21 + indent, fontUA_RU_PL_DE, 1);
@@ -784,12 +804,20 @@ void showSimpleTempH() {
         showDigit((int)(t6t/100)%10, 11 + indent, (fontSizeData?dig4x7:dig4x8), 1);
         showDigit((int)(t6t/1000)%10, 6 + indent, (fontSizeData?dig4x7:dig4x8), 1);      
       } else {
+        if(sensorHome==10){  
+        showDigit((int)batThink%10, 6 + indent, (fontSizeData?dig5x7:dig5x8), 1);
+        showDigit(2, 12 + indent, (fontSizeData?znaki5x7:znaki5x8), 1);
+        showDigit((int)(batThink*10)%10, 14 + indent, (fontSizeData?dig5x7:dig5x8), 1);   
+        showDigit((int)(batThink*100)%10, 20 + indent, (fontSizeData?dig5x7:dig5x8), 1); 
+        showDigit(21, 26 + indent, (fontSizeData?znaki5x7:znaki5x8), 1);
+      } else {
         showDigit((int)(t6t*100)%10, 28 + indent, (fontSizeData?dig4x7:dig4x8), 1);
         showDigit((int)(t6t*10)%10, 23 + indent, (fontSizeData?dig4x7:dig4x8), 1);
         showDigit(2, 21 + indent, (fontSizeData?znaki5x7:znaki5x8), 1);
         showDigit((int)t6t%10, 16 + indent, (fontSizeData?dig4x7:dig4x8), 1);
         if(t6t >=10) showDigit((int)(t6t/10)%10, 11 + indent, (fontSizeData?dig4x7:dig4x8), 1);
         if(t6t>=100) showDigit((int)(t6t/100)%10, 6 + indent, (fontSizeData?dig4x7:dig4x8), 1);
+       } 
       }
     }
     if(dataDown) scrollDown(1);
@@ -798,18 +826,39 @@ void showSimpleTempH() {
 }
 //==========ВИВІД НА ЕКРАН ВОЛОГОСТІ В БУДИНКУ========================================
 void showSimpleHum() {
-  if(sensorHumi>0){
-    byte indent = aliData*(NUM_MAX1-4);
-    dx = dy = 0;
-    clr(1);
-    showDigit(7, 0 + indent, (fontSizeData?znaki5x7:znaki5x8), 1);     // друкуємо знак вологості
-    if(h1 >= 10) showDigit(h1/10, 6 + indent, (fontSizeData?dig5x7:dig5x8), 1);
-    showDigit((h1-(h1/10)*10), 12 + indent, (fontSizeData?dig5x7:dig5x8), 1);
-    showDigit(2, 18 + indent, (fontSizeData?znaki5x7:znaki5x8), 1);
-    showDigit(h2, 20 + indent, (fontSizeData?dig5x7:dig5x8), 1);
-    showDigit(8, 26 + indent, (fontSizeData?znaki5x7:znaki5x8), 1);
-    if(dataDown) scrollDown(1);
-    refreshAll();
+    if(minute%2 == 0 || humThinkOnOff != 1){
+      if(sensorHumi>0){
+        byte indent = aliData*(NUM_MAX1-4);
+        dx = dy = 0;
+        clr(1);
+        showDigit(7, 0 + indent, (fontSizeData?znaki5x7:znaki5x8), 1);     // друкуємо знак вологості
+        if(h1 >= 10) showDigit(h1/10, 6 + indent, (fontSizeData?dig5x7:dig5x8), 1);
+        showDigit((h1-(h1/10)*10), 12 + indent, (fontSizeData?dig5x7:dig5x8), 1);
+        showDigit(2, 18 + indent, (fontSizeData?znaki5x7:znaki5x8), 1);
+        showDigit(h2, 20 + indent, (fontSizeData?dig5x7:dig5x8), 1);
+        showDigit(8, 26 + indent, (fontSizeData?znaki5x7:znaki5x8), 1);
+        if(dataDown) scrollDown(1);
+        refreshAll();
+      }
+   }else {
+        byte indent = aliData*(NUM_MAX1-4);
+        dx = dy = 0;
+        clr(1);
+        showDigit(19, 0 + indent, (fontSizeData?znaki5x7:znaki5x8), 1);     // друкуємо знак вологості
+     if(millis()-counterThink>900000){
+      showDigit(13 , 6 + indent, fontUA_RU_PL_DE, 1);
+      showDigit(13, 12 + indent, fontUA_RU_PL_DE, 1);
+      showDigit( 2, 18 + indent, znaki5x8, 1);
+      showDigit(13, 20 + indent, fontUA_RU_PL_DE, 1);
+    } else {        
+        if(hT1 >= 10) showDigit(hT1/10, 6 + indent, (fontSizeData?dig5x7:dig5x8), 1);
+        showDigit((hT1-(hT1/10)*10), 12 + indent, (fontSizeData?dig5x7:dig5x8), 1);
+        showDigit(2, 18 + indent, (fontSizeData?znaki5x7:znaki5x8), 1);
+        showDigit(hT2, 20 + indent, (fontSizeData?dig5x7:dig5x8), 1);
+     }   
+        showDigit(8, 26 + indent, (fontSizeData?znaki5x7:znaki5x8), 1);
+        if(dataDown) scrollDown(1);
+        refreshAll();    
   }
 }
 //==========ВИВІД НА ЕКРАН ТИСКУ В БУДИНКУ========================================
@@ -819,26 +868,32 @@ void showSimplePre() {
     dx = dy = 0;
     clr(1);
     showDigit(9, 0 + indent, (fontSizeData?znaki5x7:znaki5x8), 1);     // друкуємо знак тиску
+     if(sensorPrAl==10&&millis()-counterThink>900000){
+      showDigit(13 , 6 + indent, fontUA_RU_PL_DE, 1);
+      showDigit(13, 12 + indent, fontUA_RU_PL_DE, 1);
+      showDigit(13, 18 + indent, fontUA_RU_PL_DE, 1);
+    } else {   
     if(p1>0)showDigit(p1, 5 + indent, (fontSizeData?dig5x7:dig5x8), 1);
     showDigit(p2 , (p1 > 0 ? 10 : 6) + indent, (fontSizeData?dig5x7:dig5x8), 1);
     showDigit(p3 , (p1 > 0 ? 16 : 12) + indent, (fontSizeData?dig5x7:dig5x8), 1);
     showDigit(p4 , (p1 > 0 ? 22 : 18) + indent, (fontSizeData?dig5x7:dig5x8), 1);
+    }
     showDigit((pressSys == 1 ? 10 : 15), (p1 > 0 ? 28 : 24) + indent, (fontSizeData?znaki5x7:znaki5x8), 1);
     showDigit((pressSys == 1 ? 11 : 16), (p1 > 0 ? (pressSys==1?33:32) : (pressSys==1?29:28)) + indent, (fontSizeData?znaki5x7:znaki5x8), 1);
     if(dataDown) scrollDown(1);
     refreshAll();
-  }
+ }
 }
 //==========ВИВІД НА ЕКРАН ДАТИ=========================================================
 void showSimpleDate() {
   byte indent = aliData*(NUM_MAX1-4);
   dx = dy = 0;
   clr(1);
-  showDigit(day / 10, 4 + indent, (fontSizeData?dig5x7:dig5x8), 1);
-  showDigit(day % 10, 10 + indent, (fontSizeData?dig5x7:dig5x8), 1);
+  showDigit(day / 10, 2 + indent, (fontSizeData?dig6x7:dig6x8), 1);
+  showDigit(day % 10, 9 + indent, (fontSizeData?dig6x7:dig6x8), 1);
   showDigit(2, 16 + indent, (fontSizeData?znaki5x7:znaki5x8), 1);
-  showDigit(month / 10, 18 + indent, (fontSizeData?dig5x7:dig5x8), 1);
-  showDigit(month % 10, 24 + indent, (fontSizeData?dig5x7:dig5x8), 1);
+  showDigit(month / 10, 18 + indent, (fontSizeData?dig6x7:dig6x8), 1);
+  showDigit(month % 10, 25 + indent, (fontSizeData?dig6x7:dig6x8), 1);
   if(dataDown) scrollDown(1);
   refreshAll();
 }
@@ -919,20 +974,30 @@ void showAnimClock() {
   int flash = millis() % 1000;
   if(!bigCklock) {
     if(!alarm_stat){
+     if(WIFI_connected){
       if((flash >= 180 && flash < 360) || flash >= 540) { // мерегтіння двокрапок в годиннику підвязуємо до личильника циклів
-        setCol(digPos[4], WIFI_connected ? (fontSizeCLOCK ? 0x36 : 0x66) : (fontSizeCLOCK ? 0x30 : 0x60));
-        setCol(digPos[4]+1, WIFI_connected ? (fontSizeCLOCK ? 0x36 : 0x66) : (fontSizeCLOCK ? 0x30 : 0x60));
+        setCol(digPos[4], fontSizeCLOCK ? 0x36 : 0x66);
+        setCol(digPos[4]+1, fontSizeCLOCK ? 0x36 : 0x66);
       }
       if(statusUpdateNtpTime) { // якщо останнє оновленя часу було вдалим, то двокрапки в годиннику будуть анімовані
         if(flash >= 0 && flash < 180) {
-          setCol(digPos[4], WIFI_connected ? (fontSizeCLOCK ? 0x14 : 0x24) : (fontSizeCLOCK ? 0x10 : 0x20));
-          setCol(digPos[4]+1, WIFI_connected ? (fontSizeCLOCK ? 0x22 : 0x42) : (fontSizeCLOCK ? 0x20 : 0x40));
+          setCol(digPos[4], fontSizeCLOCK ? 0x14 : 0x24);
+          setCol(digPos[4]+1, fontSizeCLOCK ? 0x22 : 0x42);
         }
         if(flash >= 360 && flash < 540) {
-          setCol(digPos[4], WIFI_connected ? (fontSizeCLOCK ? 0x22 : 0x42) : (fontSizeCLOCK ? 0x20 : 0x40));
-          setCol(digPos[4]+1, WIFI_connected ? (fontSizeCLOCK ? 0x14 : 0x24) : (fontSizeCLOCK ? 0x10 : 0x20));
+          setCol(digPos[4], fontSizeCLOCK ? 0x22 : 0x42);
+          setCol(digPos[4]+1, fontSizeCLOCK ? 0x14 : 0x24);
         }
       }
+    }else {
+      if(flash <= 500){
+          setCol(digPos[4], fontSizeCLOCK ? 0x40 : 0x80);     
+          setCol(digPos[4] + 1,0x00);
+      } else {
+          setCol(digPos[4],0x00);
+          setCol(digPos[4]+1, fontSizeCLOCK ? 0x40 : 0x80);          
+      }
+    }       
       if(updateForecast && WIFI_connected) setCol(00, flash < 500 ? 0x80 : 0x00);
       if(updateForecasttomorrow && WIFI_connected) setCol(31, flash < 500 ? 0x80 : 0x00);
     } else if(!runningLine){
@@ -947,26 +1012,36 @@ void showAnimClock() {
     }
   } else {
     if(!alarm_stat){
+    if(WIFI_connected){
     if((flash >= 180 && flash < 360) || flash >= 540) { // мерегтіння двокрапок в годиннику підвязуємо до личильника циклів
-      setCol(digPos[4], WIFI_connected ? 0x30 : 0x00);
-      setCol(digPos[4]+1, WIFI_connected ? 0x30 : 0x00);
-      setCol(digPos[5]+(aliData*(NUM_MAX1-4)), WIFI_connected ? 0x0C : 0x00);
-      setCol(digPos[5]+1+(aliData*(NUM_MAX1-4)), WIFI_connected ? 0x0C : 0x00);
+      setCol(digPos[4], 0x30);
+      setCol(digPos[4]+1, 0x30);
+      setCol(digPos[5]+(aliData*(NUM_MAX1-4)), 0x0C);
+      setCol(digPos[5]+1+(aliData*(NUM_MAX1-4)), 0x0C);
     }
     if(statusUpdateNtpTime) { // якщо останнє оновленя часу було вдалим, то двокрапки в годиннику будуть анімовані
       if(flash >= 0 && flash < 180) {
-        setCol(digPos[4], WIFI_connected ? 0x10 : 0x00);
-        setCol(digPos[4]+1, WIFI_connected ? 0x20 : 0x00);
-        setCol(digPos[5]+(aliData*(NUM_MAX1-4)), WIFI_connected ? 0x08 : 0x00);
-        setCol(digPos[5]+1+(aliData*(NUM_MAX1-4)), WIFI_connected ? 0x04 : 0x00);
+        setCol(digPos[4], 0x10);
+        setCol(digPos[4]+1, 0x20);
+        setCol(digPos[5]+(aliData*(NUM_MAX1-4)), 0x08);
+        setCol(digPos[5]+1+(aliData*(NUM_MAX1-4)), 0x04);
       }
       if(flash >= 360 && flash < 540) {
-        setCol(digPos[4], WIFI_connected ? 0x20 : 0x00);
-        setCol(digPos[4]+1, WIFI_connected ? 0x10 : 0x00);
-        setCol(digPos[5]+(aliData*(NUM_MAX1-4)), WIFI_connected ? 0x04 : 0x00);
-        setCol(digPos[5]+1+(aliData*(NUM_MAX1-4)), WIFI_connected ? 0x08 : 0x00);
+        setCol(digPos[4], 0x20);
+        setCol(digPos[4]+1, 0x10);
+        setCol(digPos[5]+(aliData*(NUM_MAX1-4)), 0x04);
+        setCol(digPos[5]+1+(aliData*(NUM_MAX1-4)), 0x08);
       }
     }
+    }else {
+      if(flash <= 500){
+        setCol(digPos[5]+(aliData*(NUM_MAX1-4)), 0x30);
+        setCol(digPos[5]+1+(aliData*(NUM_MAX1-4)), 0x00);        
+      } else {
+        setCol(digPos[5]+(aliData*(NUM_MAX1-4)), 0x00);
+        setCol(digPos[5]+1+(aliData*(NUM_MAX1-4)), 0x30);         
+      }
+    }    
     if(updateForecast && WIFI_connected) setCol(00, flash < 500 ? 0x80 : 0x00);
     if(updateForecasttomorrow && WIFI_connected) setCol(31, flash < 500 ? 0x80 : 0x00);
   } else { // - кода сработал будильник
@@ -1281,9 +1356,9 @@ void getNTPtime() {
   }
   if (printCom) Serial.println("Nie ma czasu(((");
 }
-//===============================================================================================================================//
-//                              БЕРЕМО ПОГОДУ З САЙТУ  https://www.weatherbit.io                                                 //
-//===============================================================================================================================//
+//=============================================================================//
+//               БЕРЕМО ПОГОДУ З САЙТУ  https://www.weatherbit.io              //
+//=============================================================================//
 void getWeatherData0() {
   location_name = "";
   location_region = "";
@@ -1400,7 +1475,7 @@ void getWeatherData0() {
   updateForecast = 0;
 }
 // ============================================================================//
-//               Беремо ПРОГНОЗ!!! погоди з сайту https://www.weatherbit.io     // 
+//               Беремо ПРОГНОЗ!!! погоди з сайту https://www.weatherbit.io    //
 // ============================================================================//
 void getWeatherDataz0() {
   if(!WIFI_connected) {
@@ -1573,17 +1648,19 @@ void sensors() {
   if (sensorDom) t0 += corrTempD;
   t1 = int(t0);
   t2 = int(t0 * 10 * (t0 > 0 ? 1 : -1)) % 10;
-  t3 = (sensorUl == 0 ? 0 : sensorUl == 1 ? tempDs18b20 : sensorUl == 2 ? celsiusSi7021 : sensorUl == 3 ? tempBmp : sensorUl == 4 ? tempBme : sensorUl == 6 ? tMqtt1 : sensorUl == 7 ? tMqtt2 : sensorUl == 8 ? tMqtt3 : 0);
+  t3 = (sensorUl == 0 ? 0 : sensorUl == 1 ? tempDs18b20 : sensorUl == 2 ? celsiusSi7021 : sensorUl == 3 ? tempBmp : sensorUl == 4 ? tempBme : sensorUl == 6 ? tMqtt1 : sensorUl == 7 ? tMqtt2 : sensorUl == 8 ? tMqtt3 : sensorUl == 10 ? tempThink : 0);
   if (sensorUl) t3 += corrTempU;
   t4 = int(t3 * -1);
   t5 = int(t3 * 10 * (t3 > 0 ? 1 : -1)) % 10;
-  t6 = (sensorHome == 0 ? 0 : sensorHome == 1 ? tempDs18b20 : sensorHome == 2 ? celsiusSi7021 : sensorHome == 3 ? tempBmp : sensorHome == 4 ? tempBme : sensorHome == 6 ? tMqtt1 : sensorHome == 7 ? tMqtt2 : sensorHome == 8 ? tMqtt3 : 0);
+  t6 = (sensorHome == 0 ? 0 : sensorHome == 1 ? tempDs18b20 : sensorHome == 2 ? celsiusSi7021 : sensorHome == 3 ? tempBmp : sensorHome == 4 ? tempBme : sensorHome == 6 ? tMqtt1 : sensorHome == 7 ? tMqtt2 : sensorHome == 8 ? tMqtt3 : sensorHome == 10 ? batThink : 0);
   if (sensorHome) t6 += corrTempH;
   h0 = (sensorHumi == 2 ? humSi7021 : sensorHumi == 4 ? humBme : 0);
   if (sensorHumi) h0 += corrHumi;
   h1 = int(h0);
   h2 = int(h0 * 10 * (h0 > 0 ? 1 : -1)) % 10;
-  p0 = int(sensorPrAl == 3 ? pressBmp : pressBme);
+  hT1 = int(humThink);
+  hT2 = int(humThink * 10 * (humThink > 0 ? 1 : -1)) % 10;
+  p0 = int(sensorPrAl == 3 ? pressBmp : sensorPrAl == 4 ? pressBme : sensorPrAl == 10 ? pressThink : 0);
   if (sensorPrAl) p0 += corrPress;
   p1 = p0 / 1000;
   p2 = (p0 - p1 * 1000) / 100;
@@ -1591,11 +1668,12 @@ void sensors() {
   p4 = p0 % 10;
   if (printCom) {
     printTime();
-    if (sensorDom) Serial.println("sensorDom  = " + String(t0));
-    if (sensorUl) Serial.println("          sensorUl   = " + String(t3));
+    if (sensorDom) Serial.println("sensorDom  = " + String(t0)+ " °C");
+    if (sensorUl) Serial.println("          sensorUl   = " + String(t3)+ " °C"); 
     if (sensorHome) Serial.println("          sensorHome = " + String(t6));
-    if (sensorHumi) Serial.println("          sensorHumi = " + String(h0));
-    if (sensorPrAl) Serial.println("          sensorPrAl = " + String(p0));
+    if (sensorHumi) Serial.println("          sensorHumi = " + String(h0)+ " %");
+    if (sensorPrAl) Serial.println("          sensorPrAl = " + String(p0)+ " мм");
+    Serial.println("          humThink = " + String(humThink)+ " %");
   }
 }
 //--------------------------------------------------------------------------
@@ -1635,7 +1713,7 @@ void sensorsDs18b20() {  //1
   tempDs18b20 = (float)raw / 16.00;
   if (printCom) {
     printTime();
-    Serial.println("Temperature DS18B20: " + String(tempDs18b20) + " *C");
+    Serial.println("Temperature DS18B20: " + String(tempDs18b20) + " °C");
   }
 }
 //--------------------------------------------------------------------------
@@ -1645,7 +1723,7 @@ void sensorsSi7021() {  //2
   celsiusSi7021 = sensor.readTemperature();
   if (printCom) {
     printTime();
-    Serial.println("Temperature Si7021: " + String(celsiusSi7021) + " *C,  Humidity: " + String(humSi7021) + " %");
+    Serial.println("Temperature Si7021: " + String(celsiusSi7021) + " °C,  Humidity: " + String(humSi7021) + " %");
   }
 }
 //--------------------------------------------------------------------------
@@ -1657,7 +1735,7 @@ void sensorsBmp() {  //3
     altBmp = bmp.readAltitude(1013.25);
     if (printCom) {
       printTime();
-      if (bmp280 == true) Serial.println("Temperature BMP280: " + String(tempBmp) + " *C,  Pressure: " + String(pressBmp) + (pressSys == 1 ? " мм рт.ст." : " hPa") + ",  Approx altitude: " + String(altBmp) + " m");
+      if (bmp280 == true) Serial.println("Temperature BMP280: " + String(tempBmp) + " °C,  Pressure: " + String(pressBmp) + (pressSys == 1 ? " мм рт.ст." : " гПа") + ",  Approx altitude: " + String(altBmp) + " м");
     }
   }
   if (BMP180 == true) {
@@ -1667,7 +1745,7 @@ void sensorsBmp() {  //3
     altBmp = bmp180.readAltitude(101500);
     if (printCom) {
       printTime();
-      if (BMP180 == true) Serial.println("Temperature BMP180: " + String(tempBmp) + " *C,  Pressure: " + String(pressBmp) + (pressSys == 1 ? " мм рт.ст." : " hPa") + ",  Approx altitude: " + String(altBmp) + " m");
+      if (BMP180 == true) Serial.println("Temperature BMP180: " + String(tempBmp) + " °C,  Pressure: " + String(pressBmp) + (pressSys == 1 ? " мм рт.ст." : " гПа") + ",  Approx altitude: " + String(altBmp) + " м");
     }
   }
 }
@@ -1681,7 +1759,7 @@ void sensorsBme() {  //4
   altBme = bme.readAltitudeFeet();   //bme.readAltitudeMeter()  bme.readAltitudeFeet()
   if (printCom) {
     printTime();
-    Serial.println("Temperature BME280: " + String(tempBme) + " *C,  Humidity: " + String(humBme) + " %,  Pressure: " + String(int(pressBme)) + (pressSys == 1 ? " мм рт.ст." : " hPa") + ",  Approx altitude: " + String(altBme) + " m");
+    Serial.println("Temperature BME280: " + String(tempBme) + " °C,  Humidity: " + String(humBme) + " %,  Pressure: " + String(int(pressBme)) + (pressSys == 1 ? " мм рт.ст." : " гПа") + ",  Approx altitude: " + String(altBme) + " м");
   }
 }
 //--------------------------------------------------------------------------
@@ -2069,4 +2147,71 @@ void buttonHandling() {
     clr(1);
     refreshAll();
   }
+}
+// ============================================================================//
+//               Берем данные датчиков с сайта https://thingspeak.com          // 
+// ============================================================================//
+void getThinks() {
+  HTTPClient http;
+  String line = "";
+  String reqline = "http://api.thingspeak.com/channels/"+channelid+"/feeds.json?results=1";
+  if(printCom) {
+    Serial.println("=======================================================");
+    Serial.println(reqline);
+    Serial.println("=======================================================");
+  } 
+  if (http.begin(ESPclient, reqline)){
+    int httpCode = http.GET();
+    if (httpCode > 0) {
+      Serial.printf("[HTTP] GET... code: %d\n", httpCode);
+      if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
+        line = http.getString();
+      }
+    } else {
+      Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+    }
+    http.end();
+  } else {
+    Serial.printf("[HTTP} Unable to connect\n");
+  }
+  if(printCom) {
+    printTime();
+    Serial.print("line3 =");
+    Serial.println(line);
+  }
+const size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(10) + JSON_OBJECT_SIZE(16) + 420; //https://arduinojson.org/v6/assistant/
+DynamicJsonDocument doc(capacity);
+deserializeJson(doc, line);
+
+JsonObject channel = doc["channel"];
+long channel_id = channel["id"];
+const char* channel_name = channel["name"];
+const char* channel_description = channel["description"]; // "OutsideSensor"
+const char* channel_latitude = channel["latitude"]; // "0.0"
+const char* channel_longitude = channel["longitude"]; // "0.0"
+const char* channel_field1 = channel["field1"]; // "TEMP"
+const char* channel_field2 = channel["field2"]; // "HUM"
+const char* channel_field3 = channel["field3"]; // "PRES"
+const char* channel_field4 = channel["field4"]; // "BATT"
+const char* channel_field5 = channel["field5"];
+const char* channel_field6 = channel["field6"];
+const char* channel_field7 = channel["field7"];
+const char* channel_field8 = channel["field8"];
+const char* channel_created_at = channel["created_at"]; // "2020-01-22T01:48:29Z"
+const char* channel_updated_at = channel["updated_at"]; // "2020-05-13T03:24:39Z"
+long channel_last_entry_id = channel["last_entry_id"]; // 32107
+
+JsonObject feeds_0 = doc["feeds"][0];
+String createdat = feeds_0["created_at"]; // "2020-05-13T09:22:29Z"
+if(createdat!=oldcreatedat) {
+  counterThink=millis();
+  oldcreatedat=createdat;
+}
+long feeds_0_entry_id = feeds_0["entry_id"]; // 32107
+tempThink = feeds_0["field1"]; // "31.05"
+humThink = feeds_0["field2"]; // "23.73"
+pressThink = feeds_0["field3"]; // "984.92"
+if(pressSys == 1) pressThink /= 1.3332239;
+batThink = feeds_0["field4"]; // "4.12"
+sensors();
 }

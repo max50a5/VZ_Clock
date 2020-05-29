@@ -38,6 +38,16 @@ function load_times(){
     }
   }
 }
+function load_thing(){
+  if(xmlHttp.readyState==0 || xmlHttp.readyState==4){
+    xmlHttp.open('GET','/configs_thing.json',true);
+    xmlHttp.send(null);
+    xmlHttp.onload = function(e) {
+      jsonResponse=JSON.parse(xmlHttp.responseText);
+      loadBlock(xmlHttp.onload);
+    }
+  }
+}
 function load_mqtt(){
   if(xmlHttp.readyState==0 || xmlHttp.readyState==4){
     xmlHttp.open('GET','/configs_mqtt.json',true);

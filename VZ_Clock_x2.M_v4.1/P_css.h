@@ -23,7 +23,7 @@ const char P_css[] PROGMEM = R"=====(
       padding: 10px;
       margin-left: auto;
       margin-right: auto;
-      width: 460px;
+      width: 500px;
       max-width: 100%;
       display: block;
   }

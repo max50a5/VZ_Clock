@@ -7,13 +7,13 @@ bool loadConfig() {                                                // Заван
     return false;                                                  // Повернення з помилкою
   }
   size_t size = configFile.size();                                 // Перевіряємо ромір файлу, будемо використовувати файл довжиною в 1024 байта
-  if(size > 4096) {
+  if(size > 4196) {
     if(printCom) Serial.println("Config file size is too large");
     configFile.close();
     return false;                                                  // Повернення з помилкою
   }
   jsonConfig = configFile.readString();                            // завантажуємо файл конфігурації в глобальну змінну
-  DynamicJsonDocument doc(4096);                                    // Резервуємо память для json обекту буфер може розти по мірі необхідності переважно для ESP8266 
+  DynamicJsonDocument doc(4196);                                    // Резервуємо память для json обекту буфер може розти по мірі необхідності переважно для ESP8266 
   deserializeJson(doc, jsonConfig);
   configFile.close();
   ssidAP = doc["ssidAP"].as<String>();
@@ -51,6 +51,9 @@ bool loadConfig() {                                                // Заван
   buzzerOnOffku = doc["buzzerOnOffku"];
   buzzerOnOff = doc["buzzerOnOff"];
   buzzerSet = doc["buzzerSet"];
+  thingOn = doc["thingOn"];
+  humThinkOnOff = doc["humThinkOnOff"];
+  channelid = doc["channelid"].as<String>();  
   mqttOn = doc["mqttOn"];
   snprintf(mqtt_server, 30, "%s", (doc["mqtt_server"].as<String>()).c_str());
   mqtt_port = doc["mqtt_port"];
@@ -69,6 +72,7 @@ bool loadConfig() {                                                // Заван
   printCom = doc["printCom"];
   sensorDom = doc["sensorDom"];
   sensorUl = doc["sensorUl"];
+  sensorH = doc["sensorH"];
   sensorHome = doc["sensorHome"];
   sensorHumi = doc["sensorHumi"];
   sensorPrAl = doc["sensorPrAl"];
@@ -138,7 +142,7 @@ bool loadConfig() {                                                // Заван
 }
 //=================================================================
 bool saveConfig() {
-  DynamicJsonDocument doc(4096);
+  DynamicJsonDocument doc(4196);
   deserializeJson(doc, jsonConfig);
   doc["ssidAP"] = ssidAP;
   doc["passwordAP"] = passwordAP;
@@ -175,6 +179,9 @@ bool saveConfig() {
   doc["buzzerOnOffku"] = buzzerOnOffku;
   doc["buzzerOnOff"] = buzzerOnOff;
   doc["buzzerSet"] = buzzerSet;
+  doc["thingOn"] = thingOn;
+  doc["humThinkOnOff"] = humThinkOnOff;
+  doc["channelid"] = channelid; 
   doc["mqttOn"] = mqttOn;
   doc["mqtt_server"] = mqtt_server;
   doc["mqtt_port"] = mqtt_port;
@@ -193,6 +200,7 @@ bool saveConfig() {
   doc["printCom"] = printCom;
   doc["sensorDom"] = sensorDom;
   doc["sensorUl"] = sensorUl;
+  doc["sensorH"] = sensorH;  
   doc["sensorHome"] = sensorHome;
   doc["sensorHumi"] = sensorHumi;
   doc["sensorPrAl"] = sensorPrAl;

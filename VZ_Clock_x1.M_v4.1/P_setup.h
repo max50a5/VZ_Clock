@@ -10,7 +10,7 @@ const char P_setup[] PROGMEM =  R"=====(
         <script type = "text/javascript">
             function set_setup(submit) {
                 server = "/setup?tbd=" + val('tbd') + "&vbd=" + val('vbd') + "&tbn=" + val('tbn') + "&vbn=" + val('vbn') + "&vba=" + val_sw('vba') + "&lowLivelBrightness=" + val('lowLivelBrightness') + "&upLivelBrightness=" + val('upLivelBrightness') + "&rotate0=" + val('rotate0') + "&kuOn=" + val('kuOn') + "&kuOff=" + val('kuOff');
-                server += "&sensorDom=" + val('sensorDom') + "&sensorUl=" + val('sensorUl') + "&sensorHome=" + val('sensorHome') + "&sensorHumi=" + val('sensorHumi') + "&sensorPrAl=" + val('sensorPrAl') + "&pressSys=" + val('pressSys') + "&clockNight=" + val_sw('clockNight')  + "&buzzerOnOffku=" + val_sw('buzzerOnOffku')+ "&buzzerOnOff=" + val_sw('buzzerOnOff') + "&buzzerSet=" + val_sw('buzzerSet');
+                server += "&sensorDom=" + val('sensorDom') + "&sensorUl=" + val('sensorUl') + "&sensorH=" + val('sensorH') + "&sensorHome=" + val('sensorHome') + "&sensorHumi=" + val('sensorHumi') + "&sensorPrAl=" + val('sensorPrAl') + "&pressSys=" + val('pressSys') + "&clockNight=" + val_sw('clockNight') + "&buzzerOnOffku=" + val_sw('buzzerOnOffku')+ "&buzzerOnOff=" + val_sw('buzzerOnOff') + "&buzzerSet=" + val_sw('buzzerSet');
                 server += "&fontCLOCK=" + val('fontCLOCK') + "&aliData=" + val('aliData') + "&displayData=" + val('displayData') + "&corrTempD=" + val('corrTempD') + "&corrTempU=" + val('corrTempU') + "&corrTempH=" + val('corrTempH') + "&corrHumi=" + val('corrHumi') + "&corrPress=" + val('corrPress') + "&NUM_MAX0=" + val('NUM_MAX0') + "&butStat=" + val('butStat');
                 send_request(submit,server);
             }
@@ -26,6 +26,7 @@ const char P_setup[] PROGMEM =  R"=====(
             <div class="menu_unit">
                 <a class="link__img" href="/index.html"><span class="ico__text">Wifi</span></a>
                 <a class="link__img" href="/time.html"><span class="ico__text">Время</span></a>
+                <a class="link__img" href="/thing.html"><span class="ico__text">thing</span></a>
                 <a class="link__img" href="/mqtt.html"><span class="ico__text">Mqtt</span></a>
                 <a class="link__img" href="/weather.html"><span class="ico__text">Прогноз</span></a>
                 <a class="link__img" href="/setup.html"><span class="ico__text">Настройки</span></a>
@@ -189,6 +190,10 @@ const char P_setup[] PROGMEM =  R"=====(
                         <tr></tr>
                     </table>
                     <br>
+                    <div class="informer">
+                        <span class="opt_cn">Уровень яркости фоторезистора (0-15): </span>{{lba}}
+                    </div>                    
+                    <br>
                     <table id="table__font" class = "table">
                         <tr>
                             <td align = "right"><span class="opt_cn">Кол-во модулей</span></td>
@@ -248,10 +253,7 @@ const char P_setup[] PROGMEM =  R"=====(
                         <span class="switch-btn"></span>
                     </label>
                     <br>
-                    <paragraph><span class="opt_cn">Настройки датчиков</span></paragraph>
-                    <div class="informer">
-                        <span class="opt_cn">Уровень яркости фоторезистора (0-15): </span>{{lba}}
-                    </div>
+                    <paragraph><span class="opt_cn">Настройки зуммера и кнопки</span></paragraph>
                     <label class="switch"><span class="opt_cn">Почасовой сигнал (Вкл./Выкл.)</span>
                         <input type="checkbox" id="buzzerOnOffku">
                         <span class="switch-btn"></span>
@@ -335,15 +337,17 @@ const char P_setup[] PROGMEM =  R"=====(
                     <div class="informer">
                         <span class="opt_cn">Подтягивающий резистор подключен соответственно к GPIO16 и к противоположному полюсу питания</span>
                     </div>
+                    <paragraph><span class="opt_cn">Настройки датчиков</span></paragraph>
+                 <br>                               
                     <table id="table__font" class = "table">
                         <tr>
-                            <td></td>
+                            <td><span class="opt_cn"><b> Параметр </b></span></td>
                             <td><span class="opt_cn"><b> Датчик </b></span></td>
                             <td><span class="opt_cn"><b> Коррекция </b></span></td>
                             <td><span class="opt_cn"><b> Данные </b></span></td>
                         </tr>
                         <tr>
-                            <td align = "right"><span class="opt_cn">tD</span></td>
+                            <td align = "center"><span class="opt_cn">Темп. дом.</span></td>
                             <td><select id = "sensorDom">
                               <option value = "NONE"> НЕТ </option>
                               <option value = "DS18B20"> DS18B20 </option>
@@ -354,11 +358,11 @@ const char P_setup[] PROGMEM =  R"=====(
                               <option value = "MQTT2"> MQTT2 </option>
                               <option value = "MQTT3"> MQTT3 </option>
                             </select></td>
-                            <td><input type="text" class="field form-control" id="corrTempD" value="{{corrTempD}}" pattern="\- \d+(\.\d{2})?"></td>
+                            <td><input type="text" size="1" class="field form-control" id="corrTempD" value="{{corrTempD}}" pattern="\- \d+(\.\d{2})?"></td>
                             <td><span class="opt_cn"> {{Td}} </span></td>
                         </tr>
                         <tr>
-                            <td align = "right"><span class="opt_cn">tU</span></td>
+                            <td align = "center"><span class="opt_cn">Темп. ул.</span></td>
                             <td><select id = "sensorUl">
                               <option value = "NONE"> НЕТ </option>
                               <option value = "DS18B20"> DS18B20 </option>
@@ -368,12 +372,16 @@ const char P_setup[] PROGMEM =  R"=====(
                               <option value = "MQTT1"> MQTT1 </option>
                               <option value = "MQTT2"> MQTT2 </option>
                               <option value = "MQTT3"> MQTT3 </option>
+                              <option value = "THING"> THING </option>                             
                             </select></td>
-                            <td><input type="text" class="field form-control" id="corrTempU" value="{{corrTempU}}" pattern="\- \d+(\.\d{2})?"></td>
+                            <td><input type="text" size="1" class="field form-control" id="corrTempU" value="{{corrTempU}}" pattern="\- \d+(\.\d{2})?"></td>
                             <td><span class="opt_cn"> {{Tu}} </span></td>
                         </tr>
                         <tr>
-                            <td align = "right"><span class="opt_cn">tH</span></td>
+                            <td><select id = "sensorH">
+                              <option value = "0"> Доп. дан. </option>
+                              <option value = "1"> АКБ </option>
+                            </select></td>
                             <td><select id = "sensorHome">
                               <option value = "NONE"> НЕТ </option>
                               <option value = "DS18B20"> DS18B20 </option>
@@ -383,39 +391,36 @@ const char P_setup[] PROGMEM =  R"=====(
                               <option value = "MQTT1"> MQTT1 </option>
                               <option value = "MQTT2"> MQTT2 </option>
                               <option value = "MQTT3"> MQTT3 </option>
+                              <option value = "THING"> THING </option> 
                             </select></td>
-                            <td><input type="text" class="field form-control" id="corrTempH" value="{{corrTempH}}" pattern="\- \d+(\.\d{2})?"></td>
+                            <td><input type="text" size="1" class="field form-control" id="corrTempH" value="{{corrTempH}}" pattern="\- \d+(\.\d{2})?"></td>
                             <td><span class="opt_cn"> {{Th}} </span></td>
                         </tr>
                         <tr>
-                            <td align = "right"><span class="opt_cn">hD</span></td>
+                            <td align = "center"><span class="opt_cn">Влажность</span></td>
                             <td><select id = "sensorHumi">
                               <option value = "NONE"> НЕТ </option>
                               <option value = "SI7021"> SI7021 </option>
                               <option value = "BME280"> BME280 </option>
                             </select></td>
-                            <td><input type="text" class="field form-control" id="corrHumi" value="{{corrHumi}}" pattern="\- \d+(\.\d{2})?"></td>
+                            <td><input type="text" size="1" class="field form-control" id="corrHumi" value="{{corrHumi}}" pattern="\- \d+(\.\d{2})?"></td>
                             <td><span class="opt_cn"> {{Hd}} </span></td>
                         </tr>
                         <tr>
-                            <td align = "right"><span class="opt_cn">P</span></td>
+                            <td align = "center"><span class="opt_cn">Давление</span></td>
                             <td><select id = "sensorPrAl">
                               <option value = "NONE"> НЕТ </option>
                               <option value = "BMP280"> BMP180/280 </option>
                               <option value = "BME280"> BME280 </option>
+                              <option value = "THING"> THING </option>   
                             </select></td>
-                            <td><input type="text" class="field form-control" id="corrPress" value="{{corrPress}}" pattern="\- [0-9]{0,3}"></td>
-                            <td><span class="opt_cn"> {{Pu}} </span></td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td><select id = "pressSys">
+                            <td><input type="text" size="1" class="field form-control" id="corrPress" value="{{corrPress}}" pattern="\- [0-9]{0,3}">
+                            <select id = "pressSys">
                               <option value = "0"> гПа </option>
                               <option value = "1"> ммРс </option>
                             </select></td>
-                            <td></td>
-                            <td></td>
-                        </tr>
+                            <td><span class="opt_cn"> {{Pu}} </span></td>
+                        </tr>        
                     </table>
                     <br>
                     <span class="save_booton" onclick="set_setup(this);">Сохранить настройки</span>
