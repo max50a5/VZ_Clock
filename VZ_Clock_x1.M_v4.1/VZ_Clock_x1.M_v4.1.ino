@@ -93,10 +93,17 @@ char mqtt_pub_press[25] = "ESPzimmer/press";
 char mqtt_pub_alt[25] = "ESPzimmer/alt";
 bool mqttOn = true;
 // ===================================================thingspeak
+String writeapikey = "";
 String channelid = "";
 String oldcreatedat = "";
 bool humThinkOnOff = true;
-bool thingOn = true;
+bool getThing = true;
+bool sendThing = false;
+bool sendtemp = false;
+bool sendtempul = false;
+bool sendother = false;
+bool sendhum = false;
+bool sendpress = false;
 // =====================================================================================
 bool printCom = true;
 #define MAX_DIGITS 16
@@ -382,7 +389,8 @@ void setup() {
     ArduinoOTA.begin();
   }
   if(WiFi.status() == WL_CONNECTED) {
-    if(thingOn == 1) getThinks();
+    if(sendThing == 1) sendThings();
+    if(getThing == 1) getThings();
     if(displayForecast){
       if(weatherHost==0) {
         getWeatherData0();
@@ -634,8 +642,10 @@ void loop() {
     }
     // ---------- 43 секунда оновленя мережевого часу кожну хвилину або в 5 хвилину кожного часу
     if (((statusUpdateNtpTime == 0 && second == 43) || (minute == 02 && second == 43)) && !alarm_stat) timeUpdateNTP();
+    // ---------- 44 секунда отправляем данные на thingspeak каждую 5 минуту часа
+    if((second == 44 && minute%5 == 0) && sendThing == 1) sendThings();    
     // ---------- 45 секунда забираем данные с thingspeak каждую 5 минуту часа
-    if((second == 45 && minute%5 == 0) && thingOn == 1) getThinks();    
+    if((second == 45 && minute%5 == 0) && getThing == 1) getThings();    
     // ---------- 46 cек. оновлюємо прогноз погоди -------------------------------------
     if (second == 46 && hour >= timeScrollStart && hour <= timeScrollStop && !alarm_stat) {
       if (minute == 20 || minute == 25 || updateForecast || updateForecasttomorrow) {
@@ -2070,14 +2080,15 @@ void buttonHandling() {
 // ============================================================================//
 //               Берем данные датчиков с сайта https://thingspeak.com          // 
 // ============================================================================//
-void getThinks() {
+void getThings() {
   HTTPClient http;
   String line = "";
   String reqline = "http://api.thingspeak.com/channels/"+channelid+"/feeds.json?results=1";
   if(printCom) {
+    printTime();
     Serial.println("=======================================================");
-    Serial.println(reqline);
-    Serial.println("=======================================================");
+              Serial.println(reqline);
+              Serial.println("=======================================================");
   } 
   if (http.begin(ESPclient, reqline)){
     int httpCode = http.GET();
@@ -2098,7 +2109,7 @@ void getThinks() {
     Serial.print("line3 =");
     Serial.println(line);
   }
-const size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(10) + JSON_OBJECT_SIZE(16) + 420; //https://arduinojson.org/v6/assistant/
+const size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(6) + JSON_OBJECT_SIZE(12) + 340; //https://arduinojson.org/v6/assistant/
 DynamicJsonDocument doc(capacity);
 deserializeJson(doc, line);
 
@@ -2112,10 +2123,6 @@ const char* channel_field1 = channel["field1"]; // "TEMP"
 const char* channel_field2 = channel["field2"]; // "HUM"
 const char* channel_field3 = channel["field3"]; // "PRES"
 const char* channel_field4 = channel["field4"]; // "BATT"
-const char* channel_field5 = channel["field5"];
-const char* channel_field6 = channel["field6"];
-const char* channel_field7 = channel["field7"];
-const char* channel_field8 = channel["field8"];
 const char* channel_created_at = channel["created_at"]; // "2020-01-22T01:48:29Z"
 const char* channel_updated_at = channel["updated_at"]; // "2020-05-13T03:24:39Z"
 long channel_last_entry_id = channel["last_entry_id"]; // 32107
@@ -2134,3 +2141,43 @@ if(pressSys == 1) pressThink /= 1.3332239;
 batThink = feeds_0["field4"]; // "4.12"
 sensors();
 }
+// ============================================================================//
+//         Отправляем данные датчиков на сайт https://thingspeak.com           // 
+// ============================================================================//
+void sendThings(){  
+  if(sendThing == 1){
+  String str="http://api.thingspeak.com/update";
+  str+="?api_key=";
+  str+=writeapikey;
+  if(sendtemp == 1){
+    str+="&field1=";
+    str+=String(t0);
+  }
+  if(sendtempul == 1){
+    str+="&field2=";
+    str+=String(t3);
+  }
+  if(sendother == 1){
+    str+="&field3=";
+    str+=String(t6);
+  }
+  if(sendhum == 1){
+    str+="&field4=";
+    str+=String(h0);
+  } 
+  if(sendpress == 1){
+    str+="&field5=";
+    str+=String(p0);
+  }   
+  if(printCom) {
+    printTime();    
+    Serial.println("=======================================================");
+              Serial.println(str);
+              Serial.println("=======================================================");
+  } 
+  HTTPClient client;
+  client.begin(str);
+  int httpCode=client.GET();
+  client.end();
+  }
+ }

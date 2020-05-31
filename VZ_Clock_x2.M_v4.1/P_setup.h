@@ -13,7 +13,7 @@ const char P_setup[] PROGMEM =  R"=====(
                 server += "&sensorDom=" + val('sensorDom') + "&sensorUl=" + val('sensorUl') + "&sensorH=" + val('sensorH') + "&sensorHome=" + val('sensorHome') + "&sensorHumi=" + val('sensorHumi') + "&sensorPrAl=" + val('sensorPrAl') + "&pressSys=" + val('pressSys') + "&clockNight=" + val('clockNight') + "&buzzerOnOffku=" + val_sw('buzzerOnOffku')+ "&buzzerOnOff=" + val_sw('buzzerOnOff') + "&buzzerSet=" + val_sw('buzzerSet');
                 server += "&fontCLOCK=" + val('fontCLOCK') + "&aliData=" + val('aliData') + "&fontSizeCLOCK=" + val('fontSizeCLOCK') + "&fontSizeData=" + val('fontSizeData') + "&dataDown=" + val('dataDown') + "&textDown=" + val('textDown') + "&displayData=" + val('displayData');
                 server += "&corrTempD=" + val('corrTempD') + "&corrTempU=" + val('corrTempU') + "&corrTempH=" + val('corrTempH') + "&corrHumi=" + val('corrHumi') + "&corrPress=" + val('corrPress') + "&NUM_MAX0=" + val('NUM_MAX0') + "&NUM_MAX1=" + val('NUM_MAX1') + "&butStat=" + val('butStat');
-                send_request(submit,server);
+            send_request(submit,server);
             }
         </script>
     </head>
@@ -441,7 +441,7 @@ const char P_setup[] PROGMEM =  R"=====(
                               <option value = "MQTT2"> MQTT2 </option>
                               <option value = "MQTT3"> MQTT3 </option>
                               <option value = "THING"> THING </option> 
-                            </select></td>
+                            </select></td>                             
                             <td><input type="text" size="1" class="field form-control" id="corrTempH" value="{{corrTempH}}" pattern="\- \d+(\.\d{2})?"></td>
                             <td><span class="opt_cn"> {{Th}} </span></td>
                         </tr>

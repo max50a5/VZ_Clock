@@ -9,12 +9,10 @@ const char P_thing[] PROGMEM =  R"=====(
         <script type = "text/javascript" src = "/function.js"></script>
         <script type = "text/javascript">
             function set_thing_ust(submit) {
-                server = "/thingUst?thingOn=" + val('thingOn') + "&channelid=" + val('channelid') + "&humThinkOnOff=" + val_sw('humThinkOnOff');
+                server = "/thingUst?writeapikey=" + val('writeapikey') + "&channelid=" + val('channelid') + "&humThinkOnOff=" + val_sw('humThinkOnOff');
+                server += "&sendThing=" + val_sw('sendThing') + "&sendtemp=" + val_sw('sendtemp') + "&sendtempul=" + val_sw('sendtempul') + "&sendother=" + val_sw('sendother');
+                server += "&sendhum=" + val_sw('sendhum') + "&sendpress=" + val_sw('sendpress') + "&getThing=" + val_sw('getThing');
                 send_request(submit,server);
-            }
-            function set_thing_on(submit) {
-                server = "/thingOn?thingOn=" + val_sw("thingOn");
-                send_request(submit, server);
             }
         </script>
     </head>
@@ -36,21 +34,62 @@ const char P_thing[] PROGMEM =  R"=====(
                 <div class="opt_cn">Настройки ThingSpeak.com</div>
             </titles>
             <div class="informer">
-                <span class="opt_cn">Здесь нужно ввести номер канала (Channel ID)</span>
+                <span class="opt_cn">Здесь нужно ввести ключ записи (Write API Key) или номер канала (Channel ID)</span>
             </div>        
             <br>                
             <div id="main_unit">
-                <label class="switch">
-                    <span class="opt_cn">Использовать ThingSpeak.com</span>
-                    <input type="checkbox" class="checkbox" id="thingOn" name="switch-btn" onclick="set_thing_on(this);">
-                    <span class="switch-btn"></span>
-                 </label>
+                <hr>                    
+                    <label class="switch"><span class="opt_cn">Отправлять данные на ThingSpeak (Да/Нет)</span>
+                        <input type="checkbox" id="sendThing">
+                        <span class="switch-btn"></span>
+                    </label>
+                <hr> 
+                 <br>     
+                    <tr>
+                        <td align = "right"><span class="opt_cn">API ключ записи</span></td>
+                        <td><input type="text" class="field form-control" id="writeapikey" value="{{writeapikey}}" pattern="[- 0-9a-zA-Z._/]{1,20}"></td>
+                    </tr>
+                 <br>
+                 <br> 
+                    <label class="switch"><span class="opt_cn">Отправлять температуру (Да/Нет)</span>
+                        <input type="checkbox" id="sendtemp">
+                        <span class="switch-btn"></span>
+                    </label>
+                    <br>
+                    <label class="switch"><span class="opt_cn">Отправлять уличную температуру (Да/Нет)</span>
+                        <input type="checkbox" id="sendtempul">
+                        <span class="switch-btn"></span>
+                    </label>
+                    <br>
+                    <label class="switch"><span class="opt_cn">Отправлять дополнительные данные (Да/Нет)</span>
+                        <input type="checkbox" id="sendother">
+                        <span class="switch-btn"></span>
+                    </label>
+                    <br>
+                     <label class="switch"><span class="opt_cn">Отправлять влажность (Да/Нет)</span>
+                        <input type="checkbox" id="sendhum">
+                        <span class="switch-btn"></span>
+                    </label>
+                    <br>                   
+                    <label class="switch"><span class="opt_cn">Отправлять давление (Да/Нет)</span>
+                        <input type="checkbox" id="sendpress">
+                        <span class="switch-btn"></span>
+                    </label>
                     <br>  
+                    <br>                   
+                <hr>                    
+                    <label class="switch"><span class="opt_cn">Получать данные с ThingSpeak (Да/Нет)</span>
+                        <input type="checkbox" id="getThing">
+                        <span class="switch-btn"></span>
+                    </label>
+                <hr> 
+                    <br>        
                     <tr>
                         <td align = "right"><span class="opt_cn">Номер канала</span></td>
                         <td><input type="text" class="field form-control" id="channelid" value="{{channelid}}" pattern="[- 0-9a-zA-Z._/]{1,20}"></td>
                     </tr>
-                    <br>                    
+                    <br>     
+                    <br>                
                      <label class="switch"><span class="opt_cn">Показывать влажность (Да/Нет)</span>                     
                         <input type="checkbox" id="humThinkOnOff">
                         <span class="switch-btn"></span>

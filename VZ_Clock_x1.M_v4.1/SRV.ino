@@ -24,7 +24,6 @@ void server_init(void) {
   server.on("/weatherUpdate", handle_weather_update);
   server.on("/weather", handle_weather);    // Установка сервера погоди по запиту типа http://192.168.2.100/weatherHost?weatherHost=api.openweathermap.org
   server.on("/thingUst", handle_thing_ust);
-  server.on("/thingOn", handle_thing_on);
   server.on("/mqttUst", handle_mqtt_ust);
   server.on("/mqttOn", handle_mqtt_on);
   server.on("/setup", handle_setup);
@@ -188,10 +187,24 @@ void handle_ConfigThingJson() {
   json += mod;
   json += "\",\"time\":\"";
   json += (String(hour) + ":" + (minute < 10 ? "0" : "") + String(minute) + ":" + (second < 10 ? "0" : "") + String(second));
-  json += "\",\"thingOn\":\"";
-  json += (thingOn==1?"checked":"");
+  json += "\",\"sendThing\":\"";
+  json += (sendThing==1?"checked":"");
+  json += "\",\"sendtemp\":\"";
+  json += (sendtemp==1?"checked":"");
+  json += "\",\"sendtempul\":\"";
+  json += (sendtempul==1?"checked":"");
+  json += "\",\"sendother\":\"";
+  json += (sendother==1?"checked":"");
+  json += "\",\"sendhum\":\"";
+  json += (sendhum==1?"checked":"");
+  json += "\",\"sendpress\":\"";
+  json += (sendpress==1?"checked":"");
+  json += "\",\"getThing\":\"";
+  json += (getThing==1?"checked":"");
   json += "\",\"humThinkOnOff\":\"";
   json += (humThinkOnOff==1?"checked":"");
+  json += "\",\"writeapikey\":\"";
+  json += writeapikey;
   json += "\",\"channelid\":\"";
   json += channelid;
   json += "\"}";
@@ -581,24 +594,24 @@ void handle_weather() {
 }
 //======================================================================================================
 void handle_thing_ust() {
+  if(server.arg("sendThing")!="") sendThing = server.arg("sendThing").toInt();  
+  if(server.arg("sendtemp")!="") sendtemp = server.arg("sendtemp").toInt();  
+  if(server.arg("sendtempul")!="") sendtempul = server.arg("sendtempul").toInt();  
+  if(server.arg("sendother")!="") sendother = server.arg("sendother").toInt();  
+  if(server.arg("sendhum")!="") sendhum = server.arg("sendhum").toInt();      
+  if(server.arg("sendpress")!="") sendpress = server.arg("sendpress").toInt();   
+  if(server.arg("getThing")!="") getThing = server.arg("getThing").toInt();   
   if(server.arg("humThinkOnOff")!="") humThinkOnOff = server.arg("humThinkOnOff").toInt();
+  if(server.arg("writeapikey")!="") writeapikey = server.arg("writeapikey").c_str();
   if(server.arg("channelid")!="") channelid = server.arg("channelid").c_str();
   if(printCom) {
     printTime();
-    Serial.println("channelid: "+String(channelid)+",  humThinkOnOff: "+String(humThinkOnOff));
-    Serial.println("          temp Think: " + String(tempThink) + "°C ,  hum Think: " + String(humThink) + "% ,  press Think: " + String(pressThink) + "мм ,  bat Think: " + String(batThink) + "В");
+    Serial.println("sendThing: "+String(sendThing)+",  sendtemp: "+String(sendtemp)+",  sendtempul: "+String(sendtempul)+",  sendother: "+String(sendother)+",  sendhum: "+String(sendhum)+",  sendpress: "+String(sendpress));      
+    Serial.println("          getThing: "+String(getThing)+",  writeapikey: "+String(writeapikey)+",  channelid: "+String(channelid)+",  humThinkOnOff: "+String(humThinkOnOff));
+    Serial.println("          temp Think: " + String(tempThink)+ "°C,  hum Think: " + String(humThink) + "%,  press Think: " + String(pressThink) + "мм,  bat Think: " + String(batThink)+ "В");
   }
   saveConfig();
   sensorsAll();
-  server.send(200, "text/plain", "OK");
-}
-//======================================================================================================
-void handle_thing_on() {
-  if(server.arg("thingOn")!="") thingOn = server.arg("thingOn").toInt(); 
-  if(printCom) {
-    printTime();
-    Serial.println("thingOn: " + server.arg("thingOn"));
-  }
   server.send(200, "text/plain", "OK");
 }
 //======================================================================================================
